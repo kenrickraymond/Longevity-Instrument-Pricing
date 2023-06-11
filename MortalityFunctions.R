@@ -28,8 +28,10 @@ hmd.mx <- function(country, username, password, label = country) {
 
 ## Market Price of Risk
 # Minimize SSE to fit lambda parameter
-wang_getLambda = function(init_est, model){
+getLambda = function(init_est, model, premium){
   model = toString(model)
+  premium = toString(premium)
+  
   if (model == "LC"){
     qxt = LCfit$Dxt / LCfit$Ext
     pxt = 1 - qxt
@@ -49,13 +51,22 @@ wang_getLambda = function(init_est, model){
 
   wang_sse = function(lambda) {
   # Note that all other cohorts are implicitly linked to the first cohort year through LC_pxt[,1]
-  sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm(pxt[,1] ) - lambda))  - total )^2
+    sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm(pxt[,1] ) - lambda))  - total )^2
+  }
+  
+  proportional_hazard_sse = function(lambda) {
+    sum( payment * sum( discount_factor^(0:K-1) * (1 - (1 - pxt[,1])^(1/lambda)) ) - total )^2
   }
 
   # See MortalityFunctions.R for wang_sse()
-  lambda_wang = nlm(wang_sse, init_est)$estimate
+  if (premium == "Wang") {
+    lambda = nlm(wang_sse, init_est)$estimate  
+  }
+  if (premium == "Proportional") {
+    lambda = nlm(proportional_hazard_sse, init_est)$estimate  
+  }
   
-  return(lambda_wang)
+  return(lambda)
 }
 
 # Average of 30 year change in force of mortality
@@ -99,5 +110,54 @@ X_k = function(k, t, model){
   return(X_k)
 }
 
+getPrice = function(k, years_for, model, premium){
+  model = toString(model)
+  # Model Selection
+  if (model == "LC"){
+    mod_for = forecast(LCfit, h=years_for)
+  }
+  if (model == "RH"){
+    mod_for = forecast(RHfit, h=years_for)
+  }
+  if (model == "CBD"){
+    mod_for = forecast(CBDfit, h=years_for)
+  }
+  if (model == "M6"){
+    mod_for = forecast(M6fit, h=years_for)
+  }
+  
+  # Forecasting 
+  # First year
+  if (years_for == 1){
+    # Set as global variables
+    forecasted_qxt <<- mod_for$rates[k]
+    forecasted_pxt <<- 1 - mod_for$rates[k]  
+  }                                                                                   
+  # Other years
+  else{ 
+    forecasted_qxt <<- mod_for$rates[k,]
+    forecasted_pxt <<- 1 - mod_for$rates[k,]
+  }
+  
+  if (premium == "Wang") {
+    lambda = getLambda(0.5, model, "Wang")  
+    risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
+  }
+  if (premium == "Proportional") {
+    lambda = getLambda(0.5, model, "Proportional")  
+    risk_adjusted_pxt =  1 - (1 - forecasted_pxt)^(1/lambda) 
+  }
+  
+  # Floating Leg
+  S_t = sum( annuitants * risk_adjusted_pxt * discount_factor^(1:years_for) )
+  
+  # Fixed-Leg 
+  K_t = sum( X_k(k, years_for, model) * discount_factor^(1:years_for) ) # X_k(k, t)
+  
+  price = S_t - K_t
+  riskprem = (S_t/K_t) - 1
+  
+  return(riskprem)
+}
 
 

@@ -84,53 +84,6 @@ RH_mxt = RHfit$Dxt/RHfit$Ext
 CBD_mxt = CBDfit$Dxt/CBDfit$Ext
 M6_mxt = M6fit$Dxt/M6fit$Ext
 
-getPrice = function(k, years_for, model){
-  model = toString(model)
-  # Model Selection
-  if (model == "LC"){
-    mod_for = forecast(LCfit, h=years_for)
-  }
-  if (model == "RH"){
-    mod_for = forecast(RHfit, h=years_for)
-  }
-  if (model == "CBD"){
-    mod_for = forecast(CBDfit, h=years_for)
-  }
-  if (model == "M6"){
-    mod_for = forecast(M6fit, h=years_for)
-  }
-  
-  # Forecasting 
-  # First year
-  if (years_for == 1){
-    # Set as global variables
-    forecasted_qxt <<- mod_for$rates[k]
-    forecasted_pxt <<- 1 - mod_for$rates[k]  
-  }                                                                                   
-  # Other years
-  else{ 
-    forecasted_qxt <<- mod_for$rates[k,]
-    forecasted_pxt <<- 1 - mod_for$rates[k,]
-  }
-  
-  wang_risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - wang_getLambda(0.5, model))
-  
-  # Floating Leg
-  S_t = sum( annuitants * wang_risk_adjusted_pxt * discount_factor^(1:years_for) )
-  
-  # Fixed-Leg 
-  K_t = sum( X_k(k, years_for, model) * discount_factor^(1:years_for) ) # X_k(k, t)
-  
-  price = S_t - K_t
-  riskprem = (S_t/K_t) - 1
-  
-  return(riskprem)
-}
-
 # get the prices for the first "years_for" years
-LC_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC")) )
-
-getPrice(5, years_for, "LC")
-
-LC_prices
-      
+LC_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Wang")) )
+Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Proportional")) )
