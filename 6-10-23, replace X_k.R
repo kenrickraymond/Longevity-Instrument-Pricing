@@ -1,0 +1,133 @@
+library(demography)
+library(StMoMo)
+library(lifecontingencies)
+
+source("MortalityFunctions.R")
+source("Credentials.R")
+
+################################################################################################################################
+########################################################## Preparation #########################################################
+################################################################################################################################
+# The Data
+EWMaleData
+
+# Converting cenrtal exposure to initial exposure for logit models
+EWMaleIniData = central2initial(EWMaleData)
+
+# Restrict the Data
+ages.fit = 60:89
+years.fit = EWMaleIniData$years
+
+# Matrix of age weights. See StMoMo vignette page 16 (https://cran.r-project.org/web/packages/StMoMo/vignettes/StMoMoVignette.pdf)
+wxt = genWeightMat(ages = ages.fit, years = EWMaleIniData$years)
+
+# InitialiZe mortality models
+LC = lc(link = "log")
+RH = rh(link = "log", 
+        cohortAgeFun = "1") # cohortAgeFun = "NP" sets the coefficient of the cohort term to be a variable not equal to 1
+CBD = cbd(link="logit") # Logit is the q_{x,t}/{1 - q_{x,t}}
+M6 = m6(link="logit")
+
+# Fit Mortality Models
+LCfit = fit(LC, data=EWMaleData, ages.fit=ages.fit, years.fit=years.fit)
+RHfit = fit(RH, data=EWMaleData, ages.fit=ages.fit, years.fit=years.fit)
+CBDfit = fit(CBD, data = EWMaleIniData, ages.fit = ages.fit, years.fit=years.fit, wxt = wxt)
+M6fit = fit(M6, data = EWMaleIniData, ages.fit = ages.fit, years.fit=years.fit, wxt = wxt)
+
+### Goodness of Fit
+table = data.frame(matrix(nrow = 4, ncol =2, c(AIC(LCfit),
+      AIC(RHfit),
+      BIC(LCfit),
+      BIC(RHfit),
+      AIC(CBDfit),
+      AIC(M6fit),
+      BIC(CBDfit),
+      BIC(M6fit))
+  )
+)
+colnames(table) = c("AIC","BIC")
+rownames(table) = c("LC","RH","CBD","M6")
+
+
+# Plot fitted models
+plot(LCfit)
+plot(RHfit)
+plot(CBDfit)
+plot(M6fit)
+
+# Generate h-year ahead forecasts
+years_for = 20
+LCfor = forecast(LCfit, h=years_for)
+RHfor = forecast(RHfit, h=years_for)
+CBDfor = forecast(CBDfit, h=years_for)
+M6for = forecast(M6fit, h=years_for)
+
+
+################################################################################################################################
+#################################################### Market Price of Risk ######################################################
+################################################################################################################################
+interest_rate = 0.045
+discount_factor = 1/(1+interest_rate)
+annuitants = 100
+
+LC_qxt = LCfit$Dxt / LCfit$Ext
+LC_pxt = 1 - LC_qxt
+
+# https://www.sharingpensions.co.uk/
+payment = 6845
+total = 100000
+
+#Define K as the total number of years
+K = 89-60
+
+# Minimize SSE to fit lambda parameter
+LC_wang_sse = function(lambda) {
+  sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm(LC_pxt[,1] ) - lambda))  - total )^2
+}
+
+LC_lambda_wang = nlm(LC_wang_sse, 0.5)$estimate
+
+################################################################################################################################
+#################################################### Pricing Mortality Swap ####################################################
+################################################################################################################################
+# Average of 30 year change in force of mortality
+LC_mxt = LCfit$Dxt/LCfit$Ext
+
+sixty_to_seventy_mortality_improvement = mean(LC_mxt[1:10,years_for] - LC_mxt[1:10,1])
+seventy_to_eighty_mortality_improvement = mean(LC_mxt[10:20,years_for] - LC_mxt[10:20,1])
+eighty_to_ninety_mortality_improvement = mean(LC_mxt[20:30,years_for] - LC_mxt[20:30,1])
+
+
+LC_getPrice = function(k, years_for){
+  LCfor = forecast(LCfit, h=years_for)
+  
+  # First year
+  if (years_for == 1){
+    # Set as global variables
+    forecasted_qxt <<- LCfor$rates[k]
+    forecasted_pxt <<- 1 - LCfor$rates[k]  
+  }
+  # Other years
+  else{ 
+    forecasted_qxt <<- LCfor$rates[k,]
+    forecasted_pxt <<- 1 - LCfor$rates[k,]
+  }
+  
+  LC_wang_risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - LC_lambda_wang)
+  
+  # Floating Leg
+  S_t = sum( annuitants * LC_wang_risk_adjusted_pxt * discount_factor^(1:years_for) )
+  
+  # Fixed-Leg 
+  K_t = sum( X_k(k, years_for) * discount_factor^(1:years_for) ) # X_k(k, t)
+  
+  price = S_t - K_t
+  riskprem = (S_t/K_t) - 1
+  
+  return(riskprem)
+}
+
+# get the prices for the first "years_for" years
+LC_prices = as.numeric(lapply(1:years_for, function(years_for) LC_getPrice(5, years_for)))
+plot( LC_prices, ylim = c(-0.20, 0) )
+      

@@ -22,10 +22,10 @@ years.fit = EWMaleIniData$years
 wxt = genWeightMat(ages = ages.fit, years = EWMaleIniData$years)
 
 # InitialiZe mortality models
-LC = lc()
+LC = lc(link = "log")
 
 # cohortAgeFun = "NP" sets the coefficient of the cohort term to be a variable not equal to 1
-RH = rh(cohortAgeFun = "1")
+RH = rh(link = "log", cohortAgeFun = "1")
 
 # Logit is the q_{x,t}/{1 - q_{x,t}}
 CBD = cbd(link="logit")
@@ -59,10 +59,11 @@ plot(CBDfit)
 plot(M6fit)
 
 # Generate h-year ahead forecasts
-LCfor = forecast(LCfit, h=30)
-RHfor = forecast(RHfit, h=30)
-CBDfor = forecast(CBDfit, h=30)
-M6for = forecast(M6fit, h=30)
+years_for = 30
+LCfor = forecast(LCfit, h=years_for)
+RHfor = forecast(RHfit, h=years_for)
+CBDfor = forecast(CBDfit, h=years_for)
+M6for = forecast(M6fit, h=years_for)
 
 ########################################### Generate Plots ##################################
 
@@ -149,45 +150,58 @@ colnames(lambda) = "Lambda"
 rownames(lambda) = c("LC","RH","CBD","M6")
 lambda
 ############################################################ Pricing #####################################################
-# Wang transform risk-adjusted tPx
+# Forecasted Wang transform risk-adjusted rates 
 ############## REPEAT FOR ALL
-LC_wang_risk_adjusted_qxt = pnorm(qnorm(LC_qxt) - LC_lambda_wang)
-LC_wang_risk_adjusted_lxt = pnorm(qnorm(1 - LC_qxt) - LC_lambda_wang)
+# An individual Aged 65
+LC_pxt = 1- LC_qxt
+
+forecasted_qxt = 1 - LCfor$rates
+forecasted_pxt = LCfor$rates
+
+forecasted_qxt_65 = forecasted_qxt[5,]
+forecasted_pxt_65 = forecasted_pxt[5,]
+
+#LC_wang_risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt_65) - LC_lambda_wang)
+LC_wang_risk_adjusted_pxt = pnorm(qnorm(LC_pxt) - LC_lambda_wang)
 
 
-RH_wang_risk_adjusted_qxt = pnorm(qnorm(RH_qxt) - RH_lambda_wang)
-CBD_wang_risk_adjusted_qxt = pnorm(qnorm(CBD_qxt) - CBD_lambda_wang)
-M6_wang_risk_adjusted_qxt = pnorm(qnorm(M6_qxt) - M6_lambda_wang)
+# Forecasted Mortality Improvements
+#sixty_to_seventy_mortality_improvement = mean(LCfor$rates[1:10,years_for] - LCfor$rates[1:10,1])
+#seventy_to_eighty_mortality_improvement = mean(LCfor$rates[10:20,years_for] - LCfor$rates[10:20,1])
+#eighty_to_ninety_mortality_improvement = mean(LCfor$rates[20:30,years_for] - LCfor$rates[20:30,1])
+LC_mxt = LCfit$Dxt/LCfit$Ext
 
-LCfor_65_qxt = LCfor$rate[5,]
-RHfor_65_qxt = RHfor$rate[5,]
-CBDfor_65_qxt = CBDfor$rate[5,]
-M6for_65_qxt = M6for$rate[5,]
+sixty_to_seventy_mortality_improvement = mean(LC_mxt[1:10,years_for] - LC_mxt[1:10,1])
+seventy_to_eighty_mortality_improvement = mean(LC_mxt[10:20,years_for] - LC_mxt[10:20,1])
+eighty_to_ninety_mortality_improvement = mean(LC_mxt[20:30,years_for] - LC_mxt[20:30,1])
 
-# Assuming that death rates follow a Binomial Distribution
-LC_binomial_mean = LC_wang_risk_adjusted_qxt
-LC_binomial_s = (LC_wang_risk_adjusted_qxt * (1 - LC_wang_risk_adjusted_qxt))^(0.5)
 
-RH_binomial_mean = RH_wang_risk_adjusted_qxt
-RH_binomial_s = (RH_wang_risk_adjusted_qxt * (1 - RH_wang_risk_adjusted_qxt))^(0.5)
 
-CBD_binomial_mean = CBD_wang_risk_adjusted_qxt
-CBD_binomial_s = (CBD_wang_risk_adjusted_qxt * (1 - CBD_wang_risk_adjusted_qxt))^(0.5)
+# We are concerned with the strike level for a 60 year old perosn who will live to age 65, ten years from today
+X_k_to_ten = function(t){
+  X_k = LC_wang_risk_adjusted_pxt * exp( -sixty_to_seventy_mortality_improvement* t )
+  return(X_k)
+}
 
-M6_binomial_mean = M6_wang_risk_adjusted_qxt
-M6_binomial_s = (M6_wang_risk_adjusted_qxt * (1 - M6_wang_risk_adjusted_qxt))^(0.5)
+X_k = X_k_to_ten(years_for)
 
-LC_expected_death = 1 - pnorm( (LCfor_65_qxt - LC_binomial_mean)/LC_binomial_s )
-RH_expected_death = 1 - pnorm( (RHfor_65_qxt - RH_binomial_mean)/RH_binomial_s )
-CBD_expected_death = 1 - pnorm( (CBDfor_65_qxt - CBD_binomial_mean)/CBD_binomial_s )
-M6_expected_death = 1 - pnorm( (M6for_65_qxt - M6_binomial_mean)/M6_binomial_s )
 
-LC_price = sum( LC_expected_death[5,] * discount_factor^(1:51) ) - sum( LCfor_65_qxt * discount_factor^(1:30) )
-RH_price = sum( RH_expected_death[5,] * discount_factor^(1:51) ) - sum( RHfor_65_qxt * discount_factor^(1:30) )
-CBD_price = sum( CBD_expected_death[5,] * discount_factor^(1:51) ) - sum( CBDfor_65_qxt * discount_factor^(1:30) )
-M6_price = sum( M6_expected_death[5,] * discount_factor^(1:51) ) - sum( M6for_65_qxt * discount_factor^(1:30) )
+# LC_price = sum( LC_wang_risk_adjusted_pxt * discount_factor^(1:years_for) ) - sum( X_k_to_ten(years_for) * discount_factor^(1:years_for) )
+S_t = mean( LC_wang_risk_adjusted_pxt[5, ] * discount_factor^(1:51) )
+S_t
+K_t = ( forecasted_pxt_65 * discount_factor^(1:years_for) )
+K_t
 
-Price = data.frame( c(LC_price, RH_price, CBD_price, M6_price) )
-colnames(Price) = "Price"
-rownames(Price) = c("LC","RH","CBD","M6")
-Price
+
+LC_price = S_t - K_t
+LC_price
+
+riskprem = function(pi){
+  sum( S_t - (1+pi) * K_t[1] )^2  
+}
+
+nlm(riskprem,1)$estimate
+
+
+pi = S_t/K_t - 1
+pi
