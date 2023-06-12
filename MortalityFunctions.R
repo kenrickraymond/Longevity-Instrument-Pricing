@@ -28,7 +28,7 @@ hmd.mx <- function(country, username, password, label = country) {
 
 ## Market Price of Risk
 # Minimize SSE to fit lambda parameter
-getLambda = function(init_est, model, premium){
+getLambda = function(init_est, k, model, premium){
   model = toString(model)
   premium = toString(premium)
   
@@ -51,11 +51,15 @@ getLambda = function(init_est, model, premium){
 
   wang_sse = function(lambda) {
   # Note that all other cohorts are implicitly linked to the first cohort year through LC_pxt[,1]
-    sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm(pxt[,1] ) - lambda))  - total )^2
+    sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm(pxt[,k] ) - lambda))  - total )^2
   }
   
   proportional_hazard_sse = function(lambda) {
-    sum( payment * sum( discount_factor^(0:K-1) * (1 - (1 - pxt[,1])^(1/lambda)) ) - total )^2
+    sum( payment * sum( discount_factor^(0:K-1) * (1 - (1 - pxt[,k])^(1/lambda)) ) - total )^2
+  }
+  
+  sd_sse = function(lambda) {
+    sum( payment * sum( discount_factor^(0:K-1) * (1 - (1 - pxt[,k])^(1/lambda)) ) - total )^2
   }
 
   # See MortalityFunctions.R for wang_sse()
@@ -64,6 +68,10 @@ getLambda = function(init_est, model, premium){
   }
   if (premium == "Proportional") {
     lambda = nlm(proportional_hazard_sse, init_est)$estimate  
+  }
+  if (premium == "Stdev") {
+    # (Expectation of the Portoflio - Expectation of the Risk) / Stdev Risk
+    lambda = ( mean(pxt) - mean(pxt[,k]) ) / sd(pxt[,k])
   }
   
   return(lambda)
@@ -127,32 +135,47 @@ getPrice = function(k, years_for, model, premium){
   }
   
   # Forecasting 
-  # First year
+  ## First year
   if (years_for == 1){
     # Set as global variables
     forecasted_qxt <<- mod_for$rates[k]
     forecasted_pxt <<- 1 - mod_for$rates[k]  
   }                                                                                   
-  # Other years
+  ## Other years
   else{ 
     forecasted_qxt <<- mod_for$rates[k,]
     forecasted_pxt <<- 1 - mod_for$rates[k,]
   }
   
   if (premium == "Wang") {
-    lambda = getLambda(0.5, model, "Wang")  
+    lambda = getLambda(0.5, k, model, "Wang")  
     risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
+    # Floating Leg
+    S_t = sum( annuitants * risk_adjusted_pxt * discount_factor^(1:years_for) )
   }
   if (premium == "Proportional") {
-    lambda = getLambda(0.5, model, "Proportional")  
-    risk_adjusted_pxt =  1 - (1 - forecasted_pxt)^(1/lambda) 
+    lambda = getLambda(0.5, k, model, "Proportional")  
+    risk_adjusted_pxt =  1 - (1 - forecasted_pxt)^(1/lambda)
+    # Floating Leg
+    S_t = sum( annuitants * risk_adjusted_pxt * discount_factor^(1:years_for) )
   }
-  
-  # Floating Leg
-  S_t = sum( annuitants * risk_adjusted_pxt * discount_factor^(1:years_for) )
-  
+  if (premium == "Stdev") {
+    # The init_est param is not used to obtain lambda. We set it equal to 0.5 for generalization.
+    lambda = getLambda(0.5, k, model, "Stdev")
+    
+    if (years_for == 1){
+      # Pure premium for the first year, no risk loading
+      portfolio_expectation = mean(forecasted_pxt)
+    } 
+    else{
+      portfolio_expectation = mean(forecasted_pxt) + lambda * sd(forecasted_pxt)
+    }
+    # Floating Leg
+    S_t = sum( annuitants * portfolio_expectation * discount_factor^(1:years_for) ) # Perhaps I should generalize the portfolio expectation later. This is for clarity.
+  }
+
   # Fixed-Leg 
-  K_t = sum( X_k(k, years_for, model) * discount_factor^(1:years_for) ) # X_k(k, t)
+  K_t = sum( X_k(k, years_for, model) * discount_factor^(1:years_for) ) # X_k(k, t, model)
   
   price = S_t - K_t
   riskprem = (S_t/K_t) - 1

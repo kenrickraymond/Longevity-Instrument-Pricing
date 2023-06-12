@@ -36,14 +36,14 @@ M6fit = fit(M6, data = EWMaleIniData, ages.fit = ages.fit, years.fit=years.fit, 
 
 ### Goodness of Fit
 table = data.frame(matrix(nrow = 4, ncol =2, c(AIC(LCfit),
-      AIC(RHfit),
-      BIC(LCfit),
-      BIC(RHfit),
-      AIC(CBDfit),
-      AIC(M6fit),
-      BIC(CBDfit),
-      BIC(M6fit))
-  )
+                                               AIC(RHfit),
+                                               BIC(LCfit),
+                                               BIC(RHfit),
+                                               AIC(CBDfit),
+                                               AIC(M6fit),
+                                               BIC(CBDfit),
+                                               BIC(M6fit))
+)
 )
 colnames(table) = c("AIC","BIC")
 rownames(table) = c("LC","RH","CBD","M6")
@@ -85,5 +85,6 @@ CBD_mxt = CBDfit$Dxt/CBDfit$Ext
 M6_mxt = M6fit$Dxt/M6fit$Ext
 
 # get the prices for the first "years_for" years
-LC_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Wang")) )
-Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Proportional")) )
+LC_Wang_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Wang")) )
+RH_Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "RH", "Proportional")) )
+CBD_Std_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "CBD", "Stdev")) )
