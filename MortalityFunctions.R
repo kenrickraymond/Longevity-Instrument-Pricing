@@ -57,10 +57,6 @@ getLambda = function(init_est, k, model, premium){
   proportional_hazard_sse = function(lambda) {
     sum( payment * sum( discount_factor^(0:K-1) * (1 - (1 - pxt[,k])^(1/lambda)) ) - total )^2
   }
-  
-  sd_sse = function(lambda) {
-    sum( payment * sum( discount_factor^(0:K-1) * (1 - (1 - pxt[,k])^(1/lambda)) ) - total )^2
-  }
 
   # See MortalityFunctions.R for wang_sse()
   if (premium == "Wang") {
@@ -74,7 +70,7 @@ getLambda = function(init_est, k, model, premium){
     lambda = ( mean(pxt) - mean(pxt[,k]) ) / sd(pxt[,k])
   }
   if (premium == "Var") {
-    # (Expectation of the Portoflio - Expectation of the Risk) / Stdev Risk
+    # (Expectation of the Portoflio - Expectation of the Risk) / Var Risk
     lambda = ( mean(pxt) - mean(pxt[,k]) ) / var(pxt[,k])
   }
   

@@ -90,15 +90,19 @@ RH_Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5,
 CBD_Std_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "CBD", "Stdev")) )
 M6_Var_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "M6", "Var")) )
 
+# Comparing the implied risk premium for different pricing principles
 LC_Wang_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Wang")) )
 LC_Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Proportional")) )
 LC_Std_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Stdev")) )
 LC_Var_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Var")) )
 
-plot(LC_Wang_prices, ylim = c(-0.20,0))
-lines(LC_Prop_prices, col="red")
-lines(LC_Std_prices, col= "green", pch=2)
-lines(LC_Var_prices, col="blue")
+# Plotting
+plot(LC_Wang_prices, ylim = c(-0.20,0), lwd=2, type="l", xlim = c(0,20), main= "Implied Risk Premium generated from LC model", ylab="Percentage in Decimal Basis", xlab = "Years to Maturity of Longevity Swap")
+lines(LC_Prop_prices, lwd = 2, col="red")
+lines(LC_Std_prices, lwd = 2, col= "green")
+lines(LC_Var_prices, col="blue", lty=2)
+legend("topright", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
+       col=c("black", "red", "green", "blue"), lty=c(1,1,1,2), cex=0.8)
 
-LC_Std_prices
-LC_Var_prices
+plot(LC_Std_prices)
+lines(LC_Var_prices)
