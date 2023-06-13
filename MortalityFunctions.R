@@ -73,6 +73,10 @@ getLambda = function(init_est, k, model, premium){
     # (Expectation of the Portoflio - Expectation of the Risk) / Stdev Risk
     lambda = ( mean(pxt) - mean(pxt[,k]) ) / sd(pxt[,k])
   }
+  if (premium == "Var") {
+    # (Expectation of the Portoflio - Expectation of the Risk) / Stdev Risk
+    lambda = ( mean(pxt) - mean(pxt[,k]) ) / var(pxt[,k])
+  }
   
   return(lambda)
 }
@@ -165,15 +169,29 @@ getPrice = function(k, years_for, model, premium){
     
     if (years_for == 1){
       # Pure premium for the first year, no risk loading
-      portfolio_expectation = mean(forecasted_pxt)
+      risk_adjusted_pxt = mean(forecasted_pxt)
     } 
     else{
-      portfolio_expectation = mean(forecasted_pxt) + lambda * sd(forecasted_pxt)
+      risk_adjusted_pxt = mean(forecasted_pxt) + lambda * sd(forecasted_pxt)
     }
     # Floating Leg
-    S_t = sum( annuitants * portfolio_expectation * discount_factor^(1:years_for) ) # Perhaps I should generalize the portfolio expectation later. This is for clarity.
+    S_t = sum( annuitants * risk_adjusted_pxt * discount_factor^(1:years_for) )
   }
-
+  if (premium == "Var") {
+    # The init_est param is not used to obtain lambda. We set it equal to 0.5 for generalization.
+    lambda = getLambda(0.5, k, model, "Stdev")
+    
+    if (years_for == 1){
+      # Pure premium for the first year, no risk loading
+      risk_adjusted_pxt = mean(forecasted_pxt)
+    } 
+    else{
+      risk_adjusted_pxt = mean(forecasted_pxt) + lambda * var(forecasted_pxt)
+    }
+    # Floating Leg
+    S_t = sum( annuitants * risk_adjusted_pxt * discount_factor^(1:years_for) ) 
+  }
+  
   # Fixed-Leg 
   K_t = sum( X_k(k, years_for, model) * discount_factor^(1:years_for) ) # X_k(k, t, model)
   

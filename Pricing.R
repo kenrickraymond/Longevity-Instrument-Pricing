@@ -88,3 +88,17 @@ M6_mxt = M6fit$Dxt/M6fit$Ext
 LC_Wang_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Wang")) )
 RH_Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "RH", "Proportional")) )
 CBD_Std_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "CBD", "Stdev")) )
+M6_Var_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "M6", "Var")) )
+
+LC_Wang_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Wang")) )
+LC_Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Proportional")) )
+LC_Std_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Stdev")) )
+LC_Var_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Var")) )
+
+plot(LC_Wang_prices, ylim = c(-0.20,0))
+lines(LC_Prop_prices, col="red")
+lines(LC_Std_prices, col= "green", pch=2)
+lines(LC_Var_prices, col="blue")
+
+LC_Std_prices
+LC_Var_prices
