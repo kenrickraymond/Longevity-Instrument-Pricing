@@ -66,24 +66,29 @@ M6for = forecast(M6fit, h=years_for)
 #################################################### Market Price of Risk ######################################################
 ################################################################################################################################
 # Set the parameter values
-lambda = 0.5
+## To do, find a way to calibrate lambda
+lambda = 0.8
+
 notional_principal = 1000
 annuitants = 10000
 
-interest_rate = 0.05
-discount_factor = exp(- interest_rate)
+# Assume a known constant interest rate that is continuously compounded
+# interest_rate = 0.05
+# discount_factor = exp(- interest_rate)
 
-# Replace with k as link cohort
-forecasted_qxt <<- LCfor$rates[1,]
-forecasted_pxt <<- 1 - forecasted_qxt
+LC_Wang_risk_prem = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, annuitants, notional_principal, 0.5, "LC", "Wang") ) )
+LC_Prop_risk_prem = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, annuitants, notional_principal, 0.5, "LC", "Proportional") ) )
+LC_Std_risk_prem = as.numeric(lapply(1:years_for, function(years_for) getPrice(5, years_for, annuitants, notional_principal, 0.5, "LC", "Stdev") ) )
+LC_Var_risk_prem = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, annuitants, notional_principal, 0.5, "LC", "Var") ) )
 
-risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
+LC_Prop_risk_prem
+LC_Var_risk_prem
 
-# Last forecasted year for reference age, S(T)
-K_t = annuitants * mean(risk_adjusted_pxt)
-S_t = annuitants * tail(risk_adjusted_pxt, n=1) 
+plot(LC_Wang_risk_prem, ylim = c(0,0.10), lwd=2, type="l", xlim = c(0,years_for), main= "Implied Risk Premium generated from LC model", ylab="Percentage in % Basis", xlab = "Years to Maturity of Longevity Swap")
+lines(LC_Prop_risk_prem, lwd = 2, col="red")
+lines(LC_Std_risk_prem, lwd = 2, col= "green", lty=2)
+lines(LC_Var_risk_prem, col="blue", lty=2)
+legend("topright", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
+       col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
 
-notional_principal * (S_t - K_t) 
 
-IRP = log(K_t / S_t) /  years_for
-           
