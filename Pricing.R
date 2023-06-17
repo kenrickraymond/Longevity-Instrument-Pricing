@@ -66,43 +66,24 @@ M6for = forecast(M6fit, h=years_for)
 #################################################### Market Price of Risk ######################################################
 ################################################################################################################################
 # Set the parameter values
-interest_rate = 0.045
-discount_factor = 1/(1+interest_rate)
-annuitants = 100
+lambda = 0.5
+notional_principal = 1000
+annuitants = 10000
 
-# https://www.sharingpensions.co.uk/
-# Values here are as of 06/11/23
-payment = 6845
-total = 100000
-K = length(ages.fit) - 1 # Define K as the total number of years
+interest_rate = 0.05
+discount_factor = exp(- interest_rate)
 
-################################################################################################################################
-#################################################### Pricing Mortality Swap ####################################################
-################################################################################################################################
-LC_mxt = LCfit$Dxt/LCfit$Ext
-RH_mxt = RHfit$Dxt/RHfit$Ext
-CBD_mxt = CBDfit$Dxt/CBDfit$Ext
-M6_mxt = M6fit$Dxt/M6fit$Ext
+# Replace with k as link cohort
+forecasted_qxt <<- LCfor$rates[1,]
+forecasted_pxt <<- 1 - forecasted_qxt
 
-# get the prices for the first "years_for" years
-LC_Wang_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Wang")) )
-RH_Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "RH", "Proportional")) )
-CBD_Std_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "CBD", "Stdev")) )
-M6_Var_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "M6", "Var")) )
+risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
 
-# Comparing the implied risk premium for different pricing principles
-LC_Wang_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Wang")) )
-LC_Prop_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Proportional")) )
-LC_Std_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Stdev")) )
-LC_Var_prices = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, "LC", "Var")) )
+# Last forecasted year for reference age, S(T)
+K_t = annuitants * mean(risk_adjusted_pxt)
+S_t = annuitants * tail(risk_adjusted_pxt, n=1) 
 
-# Plotting
-plot(LC_Wang_prices, ylim = c(-0.20,0), lwd=2, type="l", xlim = c(0,20), main= "Implied Risk Premium generated from LC model", ylab="Percentage in Decimal Basis", xlab = "Years to Maturity of Longevity Swap")
-lines(LC_Prop_prices, lwd = 2, col="red")
-lines(LC_Std_prices, lwd = 2, col= "green")
-lines(LC_Var_prices, col="blue", lty=2)
-legend("topright", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
-       col=c("black", "red", "green", "blue"), lty=c(1,1,1,2), cex=0.8)
+notional_principal * (S_t - K_t) 
 
-plot(LC_Std_prices)
-lines(LC_Var_prices)
+IRP = log(K_t / S_t) /  years_for
+           
