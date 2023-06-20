@@ -85,9 +85,9 @@ survivorForwardPrice = function(k, years_for, annuitants, notional_principal, la
     }
     else{
       S_t = annuitants * tail(forecasted_pxt, n=1)
-      K_t = annuitants * mean(forecasted_pxt) + lambda * sd(forecasted_pxt)
+      K_t = annuitants * ( mean(forecasted_pxt) + lambda * sd(forecasted_pxt) )
       
-      price = notional_principal * ( mean(S_t) - K_t + lambda * sd(S_t) )
+      price = notional_principal * ( S_t - K_t )
     }
   }
   if (premium == "Var") {
@@ -101,9 +101,9 @@ survivorForwardPrice = function(k, years_for, annuitants, notional_principal, la
     }
     else{
       S_t = annuitants * tail(forecasted_pxt, n=1)
-      K_t = annuitants * mean(forecasted_pxt) + lambda * var(forecasted_pxt)
+      K_t = annuitants * ( mean(forecasted_pxt) + lambda * notional_principal * var(forecasted_pxt) )
       
-      price = notional_principal * ( mean(S_t) - K_t + lambda * notional_principal * var(S_t) )
+      price = notional_principal * ( S_t - K_t )
     }
   }
   
