@@ -67,22 +67,19 @@ M6for = forecast(M6fit, h=years_for)
 ################################################################################################################################
 # Set the parameter values
 ## To do, find a way to calibrate lambda
-lambda = 0.8
+lambda = 0.7
 
 notional_principal = 1000
 annuitants = 10000
 
 # Assume a known constant interest rate that is continuously compounded
-# interest_rate = 0.05
-# discount_factor = exp(- interest_rate)
+interest_rate = 0.05
+discount_factor = exp(- interest_rate)
 
-LC_Wang_risk_prem = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, annuitants, notional_principal, 0.5, "LC", "Wang") ) )
-LC_Prop_risk_prem = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, annuitants, notional_principal, 0.5, "LC", "Proportional") ) )
-LC_Std_risk_prem = as.numeric(lapply(1:years_for, function(years_for) getPrice(5, years_for, annuitants, notional_principal, 0.5, "LC", "Stdev") ) )
-LC_Var_risk_prem = as.numeric( lapply(1:years_for, function(years_for) getPrice(5, years_for, annuitants, notional_principal, 0.5, "LC", "Var") ) )
-
-LC_Prop_risk_prem
-LC_Var_risk_prem
+LC_Wang_risk_prem = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
+LC_Prop_risk_prem = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Proportional") ) )
+LC_Std_risk_prem = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Stdev") ) )
+LC_Var_risk_prem = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Var") ) )
 
 plot(LC_Wang_risk_prem, ylim = c(0,0.10), lwd=2, type="l", xlim = c(0,years_for), main= "Implied Risk Premium generated from LC model", ylab="Percentage in % Basis", xlab = "Years to Maturity of Longevity Swap")
 lines(LC_Prop_risk_prem, lwd = 2, col="red")
@@ -90,5 +87,22 @@ lines(LC_Std_risk_prem, lwd = 2, col= "green", lty=2)
 lines(LC_Var_risk_prem, col="blue", lty=2)
 legend("topright", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
        col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
+
+
+as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
+LC_Wang_risk_prem
+
+years_for = 20
+
+forecasted_qxt <<- LCfor$rates[5,]
+forecasted_pxt <<- 1 - LCfor$rates[5,]
+
+risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
+
+K_t = annuitants * mean( risk_adjusted_pxt * discount_factor^(1:years_for) ) / ( mean( discount_factor^(1:years_for) ) )
+S_t =  annuitants * risk_adjusted_pxt
+
+price = notional_principal * discount_factor^(years_for) * mean(S_t - K_t)
+price
 
 
