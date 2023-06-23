@@ -1,3 +1,6 @@
+# Reduce chances of scientific notation
+options(scipen=999)
+
 library(demography)
 library(StMoMo)
 library(lifecontingencies)
@@ -56,7 +59,7 @@ plot(CBDfit)
 plot(M6fit)
 
 # Generate h-year ahead forecasts
-years_for = 20
+years_for = 10
 LCfor = forecast(LCfit, h=years_for)
 RHfor = forecast(RHfit, h=years_for)
 CBDfor = forecast(CBDfit, h=years_for)
@@ -67,7 +70,7 @@ M6for = forecast(M6fit, h=years_for)
 ################################################################################################################################
 # Set the parameter values
 ## To do, find a way to calibrate lambda
-lambda = 0.5
+lambda = 0.3
 
 notional_principal = 1000
 annuitants = 10000
@@ -76,10 +79,10 @@ annuitants = 10000
 interest_rate = 0.05
 discount_factor = exp(- interest_rate)
 
-LC_Wang_risk_prem = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
-LC_Prop_risk_prem = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Proportional") ) )
-LC_Std_risk_prem = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Stdev") ) )
-LC_Var_risk_prem = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Var") ) )
+LC_Wang_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
+LC_Prop_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Proportional") ) )
+LC_Std_Forward_Price = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Stdev") ) )
+LC_Var_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Var") ) )
 
 # plot(LC_Wang_risk_prem, ylim = c(0,0.10), lwd=2, type="l", xlim = c(0,years_for), main= "Implied Risk Premium generated from LC model", ylab="Percentage in % Basis", xlab = "Years to Maturity of Longevity Swap")
 # lines(LC_Prop_risk_prem, lwd = 2, col="red")
@@ -88,25 +91,17 @@ LC_Var_risk_prem = as.numeric( lapply(1:years_for, function(years_for) survivorF
 # legend("topright", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
 #        col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
 
-LC_Wang_risk_prem
-LC_Prop_risk_prem
-LC_Std_risk_prem
-LC_Var_risk_prem
+LC_Wang_Forward_Price
+LC_Prop_Forward_Price
+LC_Std_Forward_Price
+LC_Var_Forward_Price
 
-# as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
-# LC_Wang_risk_prem
+LC_Wang_Swap_Price = as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
+LC_Prop_Swap_Price = round(as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Proportional") ) ), digits = 4)
+LC_Std_Swap_Price = as.numeric(lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Stdev") ) )
+LC_Var_Swap_Price = as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Var") ) )
 # 
-# years_for = 20
-# 
-# forecasted_qxt <<- LCfor$rates[5,]
-# forecasted_pxt <<- 1 - LCfor$rates[5,]
-# 
-# risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
-# 
-# K_t = annuitants * mean( risk_adjusted_pxt * discount_factor^(1:years_for) ) / ( mean( discount_factor^(1:years_for) ) )
-# S_t =  annuitants * risk_adjusted_pxt
-# 
-# price = notional_principal * discount_factor^(years_for) * mean(S_t - K_t)
-# price
-# 
-
+LC_Wang_Swap_Price
+LC_Prop_Swap_Price
+LC_Std_Swap_Price
+LC_Var_Swap_Price
