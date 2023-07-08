@@ -27,56 +27,96 @@ hmd.mx <- function(country, username, password, label = country) {
 }
 
 
-getLambda = function(init_est, k, model, premium){
-  model = toString(model)
-  premium = toString(premium)
-  
-  if (model == "LC"){
-    qxt = LCfit$Dxt / LCfit$Ext
-    pxt = 1 - qxt
-  }
-  if (model == "RH"){
-    qxt = RHfit$Dxt / RHfit$Ext
-    pxt = 1 - qxt
-  }
-  if (model == "CBD"){
-    qxt = CBDfit$Dxt / CBDfit$Ext
-    pxt = 1 - qxt
-  }
-  if (model == "M6"){
-    qxt = M6fit$Dxt / M6fit$Ext
-    pxt = 1 - qxt
-  }
-  
-  wang_sse = function(lambda) {
-    # Note that all other cohorts are implicitly linked to the first cohort year through LC_pxt[,1]
-    sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm(pxt[,k] ) - lambda))  - total )^2
-  }
-  
-  proportional_hazard_sse = function(lambda) {
-    sum( payment * sum( discount_factor^(0:K-1) * (1 - (1 - pxt[,k])^(1/lambda)) ) - total )^2
-  }
-  
+# getLambda = function(init_est, k, model, premium){
+#   model = toString(model)
+#   premium = toString(premium)
+#   
+#   if (model == "LC"){
+#     qxt = LCfit$Dxt / LCfit$Ext
+#     pxt = 1 - qxt
+#   }
+#   if (model == "RH"){
+#     qxt = RHfit$Dxt / RHfit$Ext
+#     pxt = 1 - qxt
+#   }
+#   if (model == "CBD"){
+#     qxt = CBDfit$Dxt / CBDfit$Ext
+#     pxt = 1 - qxt
+#   }
+#   if (model == "M6"){
+#     qxt = M6fit$Dxt / M6fit$Ext
+#     pxt = 1 - qxt
+#   }
+#   
+#   wang_sse = function(lambda) {
+#     # Note that all other cohorts are implicitly linked to the first cohort year through LC_pxt[,1]
+#     sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm(pxt[,k] ) - lambda))  - total )^2
+#   }
+#   
+#   proportional_hazard_sse = function(lambda) {
+#     sum( payment * sum( discount_factor^(0:K-1) * (1 - (1 - pxt[,k])^(1/lambda)) ) - total )^2
+#   }
+#   
   # See MortalityFunctions.R for wang_sse()
-  if (premium == "Wang") {
-    lambda = nlm(wang_sse, init_est)$estimate  
-  }
-  if (premium == "Proportional") {
-    lambda = nlm(proportional_hazard_sse, init_est)$estimate  
-  }
-  if (premium == "Stdev") {
-    # (Expectation of the Portoflio - Expectation of the Risk) / Stdev Risk
-    lambda = ( mean(pxt) - mean(pxt[,k]) ) / sd(pxt[,k])
-  }
-  if (premium == "Var") {
-    # (Expectation of the Portoflio - Expectation of the Risk) / Var Risk
-    lambda = ( mean(pxt) - mean(pxt[,k]) ) / var(pxt[,k])
-  }
-  
-  return(lambda)
+#   if (premium == "Wang") {
+#     lambda = nlm(wang_sse, init_est)$estimate  
+#   }
+#   if (premium == "Proportional") {
+#     lambda = nlm(proportional_hazard_sse, init_est)$estimate  
+#   }
+#   if (premium == "Stdev") {
+#     # (Expectation of the Portoflio - Expectation of the Risk) / Stdev Risk
+#     lambda = ( mean(pxt) - mean(pxt[,k]) ) / sd(pxt[,k])
+#   }
+#   if (premium == "Var") {
+#     # (Expectation of the Portoflio - Expectation of the Risk) / Var Risk
+#     lambda = ( mean(pxt) - mean(pxt[,k]) ) / var(pxt[,k])
+#   }
+#   
+#   return(lambda)
+# }
+
+# getLambdaGeneralized = function(init_est, k, rates, premium){
+#   premium = toString(premium)
+#   
+#   pxt = 1 - rates
+#   
+#   wang_sse = function(lambda) {
+#     # Note that all other cohorts are implicitly linked to the first cohort year through LC_pxt[,1]
+#     sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm(pxt[,k] ) - lambda))  - total )^2
+#   }
+#   
+#   proportional_hazard_sse = function(lambda) {
+#     sum( payment * sum( discount_factor^(0:K-1) * pxt[,k])^(1/lambda ) - total )^2
+#   }
+#   
+#   # See MortalityFunctions.R for wang_sse()
+#   if (premium == "Wang") {
+#     lambda = nlm(wang_sse, init_est)$estimate  
+#   }
+#   if (premium == "Proportional") {
+#     lambda = nlm(proportional_hazard_sse, init_est)$estimate  
+#   }
+#   if (premium == "Stdev") {
+#     # (Expectation of the Portoflio - Expectation of the Risk) / Stdev Risk
+#     lambda = ( mean(pxt) - mean(pxt[,k]) ) / sd(pxt[,k])
+#   }
+#   if (premium == "Var") {
+#     # (Expectation of the Portoflio - Expectation of the Risk) / Var Risk
+#     lambda = ( mean(pxt) - mean(pxt[,k]) ) / var(pxt[,k])
+#   }
+#   
+#   return(lambda)
+# }
+
+###
+cumvar <- function (x, sd = FALSE) {
+  x <- x - x[sample.int(length(x), 1)]
+  n <- seq_along(x)
+  v <- (cumsum(x ^ 2) - cumsum(x) ^ 2 / n) / (n - 1)
+  if (sd) v <- sqrt(v)
+  v
 }
-
-
 
 survivorForwardPrice = function(k, years_for, annuitants, notional_principal, lambda, model, premium){
   model = toString(model)
@@ -163,10 +203,6 @@ survivorForwardPrice = function(k, years_for, annuitants, notional_principal, la
   risk_premium = (  - log(K_t / S_t) /  years_for ) * 100
   return(price)
 }
-
-
-
-
 
 longevitySwapPrice = function(k, years_for, annuitants, notional_principal, lambda, model, premium){
   model = toString(model)
@@ -264,10 +300,131 @@ longevitySwapPrice = function(k, years_for, annuitants, notional_principal, lamb
   return(price)
 }
 
-cumvar <- function (x, sd = FALSE) {
-  x <- x - x[sample.int(length(x), 1)]
-  n <- seq_along(x)
-  v <- (cumsum(x ^ 2) - cumsum(x) ^ 2 / n) / (n - 1)
-  if (sd) v <- sqrt(v)
-  v
+
+# Model Uncertainty
+
+survivorForwardPriceUncertainty = function(samples, k, years_for, annuitants, notional_principal, lambda, model, premium){
+  model = toString(model)
+  # Model Selection
+  if (model == "LC"){
+    # Central projections
+    mod_for = forecast(LCfit, h=years_for)
+    modsimFit = simulate(LCfit, nsim = samples, h = years_for)
+    # Bootstrapped samples
+    mod_boot = bootstrap(LCfit, nBoot = samples, type = "semiparametric")
+    modsimBoot <- simulate(mod_boot, h = years_for)
+  }
+  if (model == "RH"){
+    mod_for = forecast(RHfit, h=years_for)
+    modsimFit = simulate(RHfit, nsim = samples, h = years_for)
+
+    mod_boot = bootstrap(RHfit, nBoot = samples, type = "semiparametric")
+    modsimBoot <- simulate(mod_boot, h = years_for)
+  }
+  if (model == "CBD"){
+    mod_for = forecast(CBDfit, h=years_for)
+    modsimFit = simulate(CBDfit, nsim = samples, h = years_for)
+    
+    mod_boot = bootstrap(CBDfit, nBoot = samples, type = "semiparametric")
+    modsimBoot <- simulate(mod_boot, h = years_for)
+  }
+  if (model == "M6"){
+    mod_for = forecast(M6fit, h=years_for)
+    modsimFit = simulate(M6fit, nsim = samples, h = years_for)
+    
+    mod_boot = bootstrap(M6fit, nBoot = samples, type = "semiparametric")
+    modsimBoot <- simulate(mod_boot, h = years_for)
+  }
+  
+  # Forecasting 
+  ## First year
+  if (years_for == 1){
+    # Set as global variables
+    forecasted_qxt <<- mod_for$rates[k]
+    forecasted_pxt <<- 1 - mod_for$rates[k]
+    # Upper band of mortality rates, FIX THIS. APPLY ONLY WORKS FOR positive length neq 1
+    mxtPredPU97.5 = quantile(modsimBoot$rates, probs = 0.975)
+    pxt97.5 = 1 - mxtPredPU97.5
+    # Lower band of mortality rates
+    mxtPredPU2.5 = quantile(modsimBoot$rates, probs = 0.025)
+    pxt2.5 = 1 - mxtPredPU2.5
+  }                                                                                   
+  ## Other years
+  else{ 
+    forecasted_qxt <<- mod_for$rates[k,]
+    forecasted_pxt <<- 1 - mod_for$rates[k,]
+    
+    mxtPredPU97.5 = apply(modsimBoot$rates, c(1, 2), quantile, probs = 0.975)[k,]
+    pxt97.5 = 1 - mxtPredPU97.5
+    mxtPredPU2.5 = apply(modsimBoot$rates, c(1, 2), quantile, probs = 0.025)[k,]
+    pxt2.5 = 1 - mxtPredPU2.5
+  }
+  
+  if (premium == "Wang") {
+    # lambda = getLambdaGeneralized(0.5, k, forecasted_pxt, "Wang")
+    # lambda_upper = getLambdaGeneralized(0.5, k, pxt97.5, "Wang")
+    # lambda_lower = getLambdaGeneralized(0.5, k, pxt2.5, "Wang")
+    
+    risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
+    risk_adjusted_pxt_upper = pnorm(qnorm(pxt97.5) - lambda)
+    risk_adjusted_pxt_lower = pnorm(qnorm(pxt2.5) - lambda)
+    
+    # Floating Leg for an s-forward, S(T)
+    S_t = annuitants * tail(risk_adjusted_pxt, n=1)
+    S_t_upper = annuitants * tail(risk_adjusted_pxt_upper, n=1)
+    S_t_lower = annuitants * tail(risk_adjusted_pxt_lower, n=1)
+    
+    # Constant fixed-Leg K
+    K_t = annuitants * mean(risk_adjusted_pxt)
+    K_t_upper = annuitants * mean(risk_adjusted_pxt_upper)
+    K_t_lower = annuitants * mean(risk_adjusted_pxt_lower)
+    
+    price = as.numeric( discount_factor^(years_for) * notional_principal * (S_t - K_t) )
+    price_upper = as.numeric( discount_factor^(years_for) * notional_principal * (S_t_upper - K_t_upper) )
+    price_lower = as.numeric( discount_factor^(years_for) * notional_principal * (S_t_lower - K_t_lower) )
+  }
+  # if (premium == "Proportional") {
+  #   risk_adjusted_pxt =  (forecasted_pxt)^(1/lambda)
+  #   
+  #   S_t = annuitants * tail(risk_adjusted_pxt, n=1)
+  #   K_t = annuitants * mean(risk_adjusted_pxt)
+  #   
+  #   price = discount_factor^(years_for) * notional_principal * (S_t - K_t)
+  # }
+  # if (premium == "Stdev") {
+  #   
+  #   if (years_for == 1){
+  #     # Pure premium for the first year, no risk loading
+  #     S_t = annuitants * tail(forecasted_pxt, n=1)
+  #     K_t = annuitants * mean(forecasted_pxt) 
+  #     
+  #     price = notional_principal * ( mean(S_t) - K_t )
+  #   }
+  #   else{
+  #     S_t = annuitants * tail(forecasted_pxt, n=1)
+  #     K_t = annuitants * ( mean(forecasted_pxt) + lambda * sd(forecasted_pxt) )
+  #     
+  #     price = notional_principal * ( S_t - K_t )
+  #   }
+  # }
+  # if (premium == "Var") {
+  #   
+  #   if (years_for == 1){
+  #     # Pure premium for the first year, no risk loading
+  #     S_t = annuitants * tail(forecasted_pxt, n=1)
+  #     K_t = annuitants * mean(forecasted_pxt) 
+  #     
+  #     price = notional_principal * ( S_t - K_t )
+  #   }
+  #   else{
+  #     S_t = annuitants * tail(forecasted_pxt, n=1)
+  #     K_t = annuitants * ( mean(forecasted_pxt) + lambda * notional_principal * var(forecasted_pxt) )
+  #     
+  #     price = notional_principal * ( S_t - K_t )
+  #   }
+  # }
+  
+  # Percentage basis
+  risk_premium = (  - log(K_t / S_t) /  years_for ) * 100
+  return( c(price_upper, price, price_lower) )
 }
