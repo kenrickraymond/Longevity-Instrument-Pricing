@@ -58,7 +58,7 @@ plot(CBDfit)
 plot(M6fit)
 
 # Generate h-year ahead forecasts
-years_for = 10
+years_for = 20
 LCfor = forecast(LCfit, h=years_for)
 RHfor = forecast(RHfit, h=years_for)
 CBDfor = forecast(CBDfit, h=years_for)
@@ -83,6 +83,7 @@ lambda = 0.3
 # Assume a known constant interest rate that is continuously compounded
 interest_rate = 0.05
 discount_factor = exp(- interest_rate)
+discount_factor_simple = 1/(1+interest_rate)
 
 LC_Wang_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
 LC_Prop_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Proportional") ) )
@@ -90,34 +91,34 @@ LC_Std_Forward_Price = as.numeric(lapply(1:years_for, function(years_for) surviv
 LC_Var_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Var") ) )
 
 
-# LC_Wang_Forward_Price
-# LC_Prop_Forward_Price
-# LC_Std_Forward_Price
-# LC_Var_Forward_Price
+LC_Wang_Forward_Price
+LC_Prop_Forward_Price
+LC_Std_Forward_Price
+LC_Var_Forward_Price
 
-LC_Wang_Swap_Price = as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
+LC_Wang_Swap_Price =  as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
 LC_Prop_Swap_Price = round(as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Proportional") ) ), digits = 4)
 LC_Std_Swap_Price = as.numeric(lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Stdev") ) )
 LC_Var_Swap_Price = as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Var") ) )
 
-# LC_Wang_Swap_Price
-# LC_Prop_Swap_Price
-# LC_Std_Swap_Price
-# LC_Var_Swap_Price
+LC_Wang_Swap_Price
+LC_Prop_Swap_Price
+LC_Std_Swap_Price
+LC_Var_Swap_Price
 
-# plot(LC_Wang_Forward_Price, ylim = c(0,20000), lwd=2, type="l", xlim = c(0,years_for), main= "Survival forward prices generated from LC model", ylab="Price", xlab = "Years to Maturity of Survival Swap")
-# lines(LC_Prop_Forward_Price, lwd = 2, col="red")
-# lines(LC_Std_Forward_Price, lwd = 2, col= "green", lty=2)
-# lines(LC_Var_Forward_Price, col="blue", lty=2)
-# legend("topleft", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
-#        col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
+plot(LC_Wang_Forward_Price, ylim = c(0,20000), lwd=2, type="l", xlim = c(0,years_for), main= "Survival forward prices generated from LC model", ylab="Price", xlab = "Years to Maturity of Survival Swap")
+lines(LC_Prop_Forward_Price, lwd = 2, col="red")
+lines(LC_Std_Forward_Price, lwd = 2, col= "green", lty=2)
+lines(LC_Var_Forward_Price, col="blue", lty=2)
+legend("topleft", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
+       col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
 # 
-# plot(LC_Wang_Swap_Price, ylim = c(0,50000), lwd=2, type="l", xlim = c(0,years_for), main= "Longevity Swap prices generated from LC model", ylab="Price", xlab = "Years to Maturity of Longevity sWap")
-# lines(LC_Prop_Swap_Price, lwd = 2, col="red")
-# lines(LC_Std_Swap_Price, lwd = 2, col= "green", lty=2)
-# lines(LC_Var_Swap_Price, col="blue", lty=2)
-# legend("topleft", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
-#        col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
+plot(LC_Wang_Swap_Price, ylim = c(0,50000), lwd=2, type="l", xlim = c(0,years_for), main= "Longevity Swap prices generated from LC model", ylab="Price", xlab = "Years to Maturity of Longevity sWap")
+lines(LC_Prop_Swap_Price, lwd = 2, col="red")
+lines(LC_Std_Swap_Price, lwd = 2, col= "green", lty=2)
+lines(LC_Var_Swap_Price, col="blue", lty=2)
+legend("topleft", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
+       col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
 
 ################################################################################################################################
 #################################################### Model Uncertainty #########################################################
@@ -128,25 +129,17 @@ samples = 300
 # Note that simulate(modfit, nsim = samples, h = years_for) uses cumsum() hence it does not work for h=1. 
 # As a shortcut, append three zero values for the first forecasted year h=1
 # survivorForwardPriceUncertainty() returns three lists containing the 0.025, central, and 0.975 prediction intervals for the price of an s-forward
-start_time <- Sys.time()
-LCWangUncertainty = lapply(2:years_for, function(years_for) survivorForwardPriceUncertainty(samples, k, years_for, annuitants, notional_principal, lambda, "LC", "Wang") )
-end_time <- Sys.time()
-end_time - start_time
-mat = do.call(rbind, LCWangUncertainty)
-model_uncertainty_prices_mat = rbind( rep(0,3), mat)
-
-# Note that 200 simulations is insufficient and leads to negative prices.
-plot(model_uncertainty_prices_mat[,2], type="l", col="black", ylab="Price", xlab="Years", xlim = c(0,years_for), ylim = c(0, 20000), main="S-forward Model Uncertainty under LC model and Wang Transform")
-lines(model_uncertainty_prices_mat[,1], lty=2, col="red")
-lines(model_uncertainty_prices_mat[,3], lty=2, col="green")
-legend("topleft", legend=c("2.5 quantile", "Central Estimate","97.5 quantile"),
-       col=c("black", "red", "green"), lty=c(2,1,2), cex=0.8)
-
-# Equal?
-# mod_boot = bootstrap(LCfit, nBoot = samples, type = "semiparametric")
-# modsimBoot <- simulate(mod_boot, h = years_for)
+# start_time <- Sys.time()
+# LCWangUncertainty = lapply(2:years_for, function(years_for) survivorForwardPriceUncertainty(samples, k, years_for, annuitants, notional_principal, lambda, "LC", "Wang") )
+# end_time <- Sys.time()
+# end_time - start_time
+# mat = do.call(rbind, LCWangUncertainty)
+# model_uncertainty_prices_mat = rbind( rep(0,3), mat)
 # 
-# attributes(modsimBoot)
-# matrix(modsimBoot$rates, nrow=samples, ncol=years_for)
-
+# # Note that 200 simulations is insufficient and leads to negative prices.
+# plot(model_uncertainty_prices_mat[,2], type="l", col="black", ylab="Price", xlab="Years", xlim = c(0,years_for), ylim = c(0, 20000), main="S-forward Model Uncertainty under LC model and Wang Transform")
+# lines(model_uncertainty_prices_mat[,1], lty=2, col="red")
+# lines(model_uncertainty_prices_mat[,3], lty=2, col="green")
+# legend("topleft", legend=c("2.5 quantile", "Central Estimate","97.5 quantile"),
+#        col=c("black", "red", "green"), lty=c(2,1,2), cex=0.8)
 

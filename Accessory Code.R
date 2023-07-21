@@ -92,10 +92,13 @@
   mxtPredPU97.5 = apply(LCsimBoot$rates, c(1, 2), quantile, probs = 0.975)[5,]
   mxtPredPU2.5 = apply(LCsimBoot$rates, c(1, 2), quantile, probs = 0.025)[5,]
   
-  plot(LCfor$rates[5,])
+  plot(LCfor$rates[5,], ylim=c(0, 0.1))
   lines(mxtPredPU97.5)
   lines(mxtPredPU2.5)
   
+  LCfor$rates[5,]
+  mxtPredPU97.5
+  mxtPredPU2.5
   lambda=0.5
   
   risk_adjusted_pxt = pnorm(qnorm(1- LCfor$rates[5,]) - lambda)
@@ -125,3 +128,4 @@
   price_upper
   price_lower
   
+

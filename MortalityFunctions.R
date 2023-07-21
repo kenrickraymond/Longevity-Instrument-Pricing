@@ -151,20 +151,20 @@ survivorForwardPrice = function(k, years_for, annuitants, notional_principal, la
     risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
     
     # Floating Leg for an s-forward, S(T)
-    S_t = annuitants * tail(risk_adjusted_pxt, n=1)
+    S_t =  annuitants * tail(risk_adjusted_pxt, n=1)
     
-    # Constant fixed-Leg K
-    K_t = annuitants * mean(risk_adjusted_pxt)
+    # Constant fixed-Leg 
+    K_t = annuitants * mean(risk_adjusted_pxt) 
     
-    price = discount_factor^(years_for) * notional_principal * (S_t - K_t)
+    price = notional_principal * discount_factor^(years_for) * (S_t - K_t)
   }
   if (premium == "Proportional") {
     risk_adjusted_pxt =  (forecasted_pxt)^(1/lambda)
     
-    S_t = annuitants * tail(risk_adjusted_pxt, n=1)
-    K_t = annuitants * mean(risk_adjusted_pxt)
+    S_t =  annuitants * tail(risk_adjusted_pxt, n=1)
+    K_t = annuitants * mean(risk_adjusted_pxt) 
     
-    price = discount_factor^(years_for) * notional_principal * (S_t - K_t)
+    price = notional_principal * discount_factor^(years_for) * (S_t - K_t)
   }
   if (premium == "Stdev") {
     
@@ -173,7 +173,7 @@ survivorForwardPrice = function(k, years_for, annuitants, notional_principal, la
       S_t = annuitants * tail(forecasted_pxt, n=1)
       K_t = annuitants * mean(forecasted_pxt) 
       
-      price = notional_principal * ( mean(S_t) - K_t )
+      price = notional_principal * ( S_t - K_t )
     }
     else{
       S_t = annuitants * tail(forecasted_pxt, n=1)
@@ -201,8 +201,9 @@ survivorForwardPrice = function(k, years_for, annuitants, notional_principal, la
   
   # Percentage basis
   risk_premium = (  - log(K_t / S_t) /  years_for ) * 100
-  return(price)
+  return(risk_premium)
 }
+
 
 longevitySwapPrice = function(k, years_for, annuitants, notional_principal, lambda, model, premium){
   model = toString(model)
@@ -238,19 +239,21 @@ longevitySwapPrice = function(k, years_for, annuitants, notional_principal, lamb
     
     # Floating Leg for an longevity swap, S(t), t=1,2,...,years_for
     S_t =  annuitants * risk_adjusted_pxt
+    discounted_S_t = S_t * discount_factor_simple^(1:years_for) 
     
     # Constant fixed-Leg K
-    K_t = annuitants * sum( discount_factor^(1:years_for) * risk_adjusted_pxt ) / ( sum( discount_factor^(1:years_for) ) )
+    K_t = annuitants * sum( discount_factor^(1:years_for) / sum( discount_factor^(1:years_for) ) * risk_adjusted_pxt )
+    discounted_K_t = K_t * discount_factor_simple^(1:years_for)
     
-    price = notional_principal * discount_factor^(years_for) * sum(S_t - K_t)
+    price = notional_principal * sum( discount_factor^(1:years_for) * (S_t - K_t) )
   }
   if (premium == "Proportional") {
-    risk_adjusted_pxt = forecasted_pxt^(1/lambda)
+    risk_adjusted_pxt = (forecasted_pxt)^(1/lambda)
     
     S_t = annuitants * risk_adjusted_pxt
     K_t = annuitants * sum( discount_factor^(1:years_for) * risk_adjusted_pxt ) / ( sum( discount_factor^(1:years_for) ) )
     
-    price = notional_principal * discount_factor^(years_for) * sum(S_t - K_t)
+    price = notional_principal * sum( discount_factor^(1:years_for) * (S_t - K_t) )
   }
   if (premium == "Stdev") {
     
@@ -260,16 +263,11 @@ longevitySwapPrice = function(k, years_for, annuitants, notional_principal, lamb
       K_t = annuitants * mean(forecasted_pxt)
       
       # Do not discount under real world measure
-      price = notional_principal * ( mean(S_t) - K_t )
+      price = notional_principal * ( S_t - K_t )
     }
     else{
-      cum_avg <- cumsum(forecasted_pxt) / seq_along(forecasted_pxt)
-      cum_sd = cumvar(forecasted_pxt, sd = TRUE)
-      cum_sd[is.na(cum_sd)] <- 0
-      
       S_t = annuitants * forecasted_pxt
-      K_t = annuitants * ( cum_avg + lambda * cum_sd )
-        
+      K_t = annuitants * ( mean(forecasted_pxt) + lambda * sd(forecasted_pxt) )
       
       price = notional_principal * sum( S_t - K_t ) 
     }
@@ -284,20 +282,16 @@ longevitySwapPrice = function(k, years_for, annuitants, notional_principal, lamb
       price = notional_principal * ( mean(S_t) - K_t )
     }
     else{
-      cum_avg <- cumsum(forecasted_pxt) / seq_along(forecasted_pxt)
-      cum_var = cumvar(forecasted_pxt, sd = FALSE)
-      cum_var[is.na(cum_var)] <- 0
-      
       S_t = annuitants * forecasted_pxt
-      K_t = annuitants * ( cum_avg + lambda * notional_principal * cum_var )
+      K_t = annuitants * ( mean(forecasted_pxt) + lambda * var(forecasted_pxt) )
       
       price = notional_principal * sum( S_t - K_t ) 
     }
   }
   
   # Percentage basis
-  risk_premium = (  - log(K_t / S_t) /  years_for ) * 100
-  return(price)
+  risk_premium = - sum( log(K_t / S_t) /  years_for ) * 100
+  return(risk_premium)
 }
 
 
@@ -425,6 +419,129 @@ survivorForwardPriceUncertainty = function(samples, k, years_for, annuitants, no
   # }
   
   # Percentage basis
-  risk_premium = (  - log(K_t / S_t) /  years_for ) * 100
+  risk_premium = (  - log(K_t / S_t) /  years_for )
   return( c(price_upper, price, price_lower) )
+}
+
+################## NOT MY CODE ################
+# Rewriting BootStMoMo cause of the following error: on model$bootparameters, Error in round(x$loglik[1], 2) : non-numeric argument to mathematical function
+
+bootparam <- function(object, nBoot = 1, 
+                                type = c("semiparametric", "residual"),
+                                deathType = c("observed", "fitted"), ...) {
+  
+  type <- match.arg(type)  
+  deathType <- match.arg(deathType)
+  link <- object$model$link
+  
+  #Generate death samples
+  
+  if (link == "log") {
+    if (type == "residual") {
+      bootSamples <- genPoissonResBootSamples(
+        devRes = residuals(object, scale = FALSE), 
+        dhat = fitted(object, type = "deaths"), nBoot)
+    } else if (type == "semiparametric") {     
+      if (deathType == "observed") {
+        D <- object$Dxt
+      } else { 
+        D <- fitted(object, type = "deaths")
+      }
+      bootSamples <- genPoissonSemiparametricBootSamples(D = D, nBoot)
+      
+    }
+  } else if (link == "logit") {
+    if (type == "residual") {
+      bootSamples <- genBinomialResBootSamples(
+        devRes = residuals(object, scale = FALSE),
+        dhat = fitted(object, type = "deaths"), E = object$Ext, nBoot)
+    } else if (type == "semiparametric") {
+      if (deathType == "observed") {
+        D <- object$Dxt
+      } else { 
+        D <- fitted(object, type = "deaths")
+      }
+      bootSamples <- genBinomialSemiparametricBootSamples(D = D, 
+                                                          E = object$Ext,
+                                                          nBoot)      
+    }
+  }
+  
+  #Fit the model to each of 
+  refit <- function(Dxt) {
+    getMinimalFitStMoMo(fit(object = object$model, Dxt = Dxt, Ext = object$Ext, 
+                            ages = object$ages, years = object$years,
+                            oxt = object$oxt, wxt = object$wxt, 
+                            start.ax = object$ax, start.bx = object$bx, 
+                            start.kt = object$kt, start.b0x = object$b0x, 
+                            start.gc = object$gc, verbose = FALSE))
+  }
+  
+  bootParameters <- lapply(bootSamples, FUN = refit)
+  
+  
+  return(bootSamples)
+}
+
+poissonRes2death <- function(dhat, res) {
+  
+  if (is.na(dhat)) 
+    return(NA)
+  a <- log(dhat)
+  c <- res^2 / 2 - dhat
+  g <- function(d){
+    d * log(d) - d * (1 + a) - c  
+  }
+  dg <- function(d){
+    log(d) - a  
+  }
+  if ( (res < 0 & c > 0) | (res == -sqrt(2 * dhat) & c == 0)){
+    d <- 0
+  } else {
+    start <- max(0.01, dhat + sign(res) * 0.5 * dhat)
+    d <- rootSolve::multiroot(f = g, start = start, 
+                              jacfunc = dg, positive = TRUE)$root    
+  }
+  d  
+}
+
+getMinimalFitStMoMo <- function(object) {  
+  structure(list(model = object$model, ax = object$ax, bx = object$bx, 
+                 kt = object$kt, b0x = object$b0x, gc = object$gc, 
+                 oxt = object$oxt, ages = object$ages, years = object$years, 
+                 cohorts = object$cohorts), class = "fitStMoMo")  
+}
+
+genPoissonResBootSamples <- function(devRes, dhat, nBoot) {    
+  nYears <- ncol(dhat)
+  nAges <- nrow(dhat)
+  nObs <- nYears * nAges
+  sampleRes <- as.vector(devRes$residuals)
+  sampleRes <- sampleRes[!is.na(sampleRes)]
+  vecdHat <- as.vector(dhat)
+  
+  funSampleDeath <- function(x = 0) {
+    resStar <- sample(sampleRes, nObs, replace = TRUE)
+    dStar <- mapply(poissonRes2death, vecdHat, resStar)    
+  }  
+  
+  bootSamples <- lapply(X = 1:nBoot,FUN = funSampleDeath)
+  lapply(X = bootSamples, FUN = matrix, nrow = nAges, ncol = nYears)  
+}
+
+print.fitStMoMo <- function(x, ...) {
+  cat("Stochastic Mortality Model fit")
+  cat(paste("\nCall:", deparse(x$call)))
+  cat("\n\n")
+  print(x$model)  
+  
+  cat("\n\nData: ", x$data$label)
+  cat("\nSeries: ", x$data$series)
+  cat(paste("\nYears in fit:", min(x$years), "-", max(x$years)))
+  cat(paste("\nAges in fit:", min(x$ages), "-", max(x$ages), "\n"))
+  
+  # This causes an error for my code.
+  # cat(paste("\nLog-likelihood: ", round(x$loglik[1], 2)))
+  # cat(paste("\nDeviance: ", round(x$deviance[1], 2)))
+  # cat(paste("\nNumber of parameters: ", x$npar))  
 }
