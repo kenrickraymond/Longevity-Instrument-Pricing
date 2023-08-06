@@ -4,8 +4,8 @@ options(scipen=999)
 library(demography)
 library(StMoMo)
 library(lifecontingencies)
-
-source("MortalityFunctions.R")
+source("SurvivorForward.R")
+source("getLambda.R")
 source("Credentials.R")
 
 ################################################################################################################################
@@ -14,15 +14,16 @@ source("Credentials.R")
 # The Data
 EWMaleData
 
-# Converting cenrtal exposure to initial exposure for logit models
+# Converting central exposure to initial exposure for logit models
 EWMaleIniData = central2initial(EWMaleData)
 
 # Restrict the Data
 ages.fit = 60:89
-years.fit = EWMaleIniData$years
+years.fit = seq(1961,2001,1)
+no_years_fitted = length(years.fit)
 
 # Matrix of age weights. See StMoMo vignette page 16 (https://cran.r-project.org/web/packages/StMoMo/vignettes/StMoMoVignette.pdf)
-wxt = genWeightMat(ages = ages.fit, years = EWMaleIniData$years)
+wxt = genWeightMat(ages = ages.fit, years = years.fit)
 
 # InitialiZe mortality models
 LC = lc(link = "log")
@@ -45,8 +46,7 @@ table = data.frame(matrix(nrow = 4, ncol =2, c(AIC(LCfit),
                                                AIC(M6fit),
                                                BIC(CBDfit),
                                                BIC(M6fit))
-)
-)
+))
 colnames(table) = c("AIC","BIC")
 rownames(table) = c("LC","RH","CBD","M6")
 table
@@ -58,88 +58,100 @@ plot(CBDfit)
 plot(M6fit)
 
 # Generate h-year ahead forecasts
-years_for = 20
+years_for = 10
 LCfor = forecast(LCfit, h=years_for)
 RHfor = forecast(RHfit, h=years_for)
 CBDfor = forecast(CBDfit, h=years_for)
 M6for = forecast(M6fit, h=years_for)
-
+nsim = 500
 ################################################################################################################################
 #################################################### Market Price of Risk ######################################################
 ################################################################################################################################
-# Set the parameter values
-# Add getLambda()
 payment = 6845
 total = 100000
-notional_principal = 1000
-annuitants = 10000
 
 K = length(ages.fit) - 1
 k=5 # Reference age, in format of "first_age + k = target_age" 
 
-# Assume lambda is known for now
-lambda = 0.3
-
-# Assume a known constant interest rate that is continuously compounded
 interest_rate = 0.05
 discount_factor = exp(- interest_rate)
 discount_factor_simple = 1/(1+interest_rate)
 
-LC_Wang_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
-LC_Prop_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Proportional") ) )
-LC_Std_Forward_Price = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Stdev") ) )
-LC_Var_Forward_Price = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Var") ) )
+LCWanglambda = getLambda(0.5, 5, "LC", "Wang")
+LCProplambda = getLambda(0.5, 5, "LC", "Proportional")
+LCStdevlambda = getLambda(0.5, 5, "LC", "Stdev")
+LCVarlambda = getLambda(-0.5, 5, "LC", "Var")
+
+RHWanglambda = getLambda(0.5, 5, "RH", "Wang")
+RHProplambda = getLambda(0.5, 5, "RH", "Proportional")
+RHStdevlambda = getLambda(0.5, 5, "RH", "Stdev")
+RHVarlambda = getLambda(-0.5, 5, "RH", "Var")
+
+CBDWanglambda = getLambda(0.5, 5, "CBD", "Wang")
+CBDProplambda = getLambda(0.5, 5, "CBD", "Proportional")
+CBDStdevlambda = getLambda(0.5, 5, "CBD", "Stdev")
+CBDVarlambda = getLambda(-0.5, 5, "CBD", "Var")
+
+M6Wanglambda = getLambda(0.5, 5, "M6", "Wang")
+M6Proplambda = getLambda(0.5, 5, "M6", "Proportional")
+M6Stdevlambda = getLambda(0.5, 5, "M6", "Stdev")
+M6Varlambda = getLambda(-0.5, 5, "M6", "Var")
 
 
-LC_Wang_Forward_Price
-LC_Prop_Forward_Price
-LC_Std_Forward_Price
-LC_Var_Forward_Price
+lambda_table = data.frame(matrix(nrow = 4, ncol = 4, c(LCWanglambda, LCProplambda, LCStdevlambda, LCVarlambda,
+                                                       RHWanglambda, RHProplambda, RHStdevlambda, RHVarlambda,
+                                                       CBDWanglambda, CBDProplambda, CBDStdevlambda, CBDVarlambda,
+                                                       M6Wanglambda, M6Proplambda, M6Stdevlambda, M6Varlambda)
+))
+rownames(lambda_table) = c("Wang", "Proportional", "StDev", "Var")
+colnames(lambda_table) = c("LC","RH","CBD","M6")
+lambda_table
 
-LC_Wang_Swap_Price =  as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Wang") ) )
-LC_Prop_Swap_Price = round(as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Proportional") ) ), digits = 4)
-LC_Std_Swap_Price = as.numeric(lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Stdev") ) )
-LC_Var_Swap_Price = as.numeric( lapply(1:years_for, function(years_for) longevitySwapPrice(5, years_for, annuitants, notional_principal, lambda, "LC", "Var") ) )
 
-LC_Wang_Swap_Price
-LC_Prop_Swap_Price
-LC_Std_Swap_Price
-LC_Var_Swap_Price
+LC_Wang_Forward_Premium = as.numeric( lapply(1:years_for+1, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCWanglambda, "LC", "Wang", nsim=nsim) ) )
+LC_Prop_Forward_Premium = as.numeric( lapply(1:years_for+1, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
+LC_Std_Forward_Premium = as.numeric(lapply(1:years_for+1, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
+LC_Var_Forward_Premium = as.numeric( lapply(1:years_for+1, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
 
-plot(LC_Wang_Forward_Price, ylim = c(0,20000), lwd=2, type="l", xlim = c(0,years_for), main= "Survival forward prices generated from LC model", ylab="Price", xlab = "Years to Maturity of Survival Swap")
-lines(LC_Prop_Forward_Price, lwd = 2, col="red")
-lines(LC_Std_Forward_Price, lwd = 2, col= "green", lty=2)
-lines(LC_Var_Forward_Price, col="blue", lty=2)
-legend("topleft", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
-       col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
-# 
-plot(LC_Wang_Swap_Price, ylim = c(0,50000), lwd=2, type="l", xlim = c(0,years_for), main= "Longevity Swap prices generated from LC model", ylab="Price", xlab = "Years to Maturity of Longevity sWap")
-lines(LC_Prop_Swap_Price, lwd = 2, col="red")
-lines(LC_Std_Swap_Price, lwd = 2, col= "green", lty=2)
-lines(LC_Var_Swap_Price, col="blue", lty=2)
-legend("topleft", legend=c("Wang Principle", "Proportional Hazard Principle","Standard Deviation Principle", "Variance Principle"),
-       col=c("black", "red", "green", "blue"), lty=c(1,1,2,2), cex=0.8)
+plot(LC_Wang_Forward_Premium)
+line(LC_Prop_Forward_Premium)
+LC_Std_Forward_Premium
+LC_Var_Forward_Premium
 
-################################################################################################################################
-#################################################### Model Uncertainty #########################################################
-################################################################################################################################
-# Time difference of 8.890438 mins for 300 samples
-samples = 300
+plot(LC_Wang_Forward_Premium,
+     ylim = c( min(LC_Wang_Forward_Premium, LC_Prop_Forward_Premium), max(LC_Wang_Forward_Premium, LC_Prop_Forward_Premium)),
+     lwd=2,
+     type="l",
+     xlim = c(1,years_for+1),
+     main= "Survival forward risk premium generated from LC model",
+     ylab="Risk Premium in Percentage Basis",
+     xlab = "Years to Maturity of Survival Swap")
+lines(LC_Prop_Forward_Premium, lwd = 2, col="red")
+legend("bottomright", legend=c("Wang Principle", "Proportional Hazard Principle"),
+       col=c("black", "red", "green", "blue"), lty=c(1,1), cex=0.8)
 
-# Note that simulate(modfit, nsim = samples, h = years_for) uses cumsum() hence it does not work for h=1. 
-# As a shortcut, append three zero values for the first forecasted year h=1
-# survivorForwardPriceUncertainty() returns three lists containing the 0.025, central, and 0.975 prediction intervals for the price of an s-forward
-# start_time <- Sys.time()
-# LCWangUncertainty = lapply(2:years_for, function(years_for) survivorForwardPriceUncertainty(samples, k, years_for, annuitants, notional_principal, lambda, "LC", "Wang") )
-# end_time <- Sys.time()
-# end_time - start_time
-# mat = do.call(rbind, LCWangUncertainty)
-# model_uncertainty_prices_mat = rbind( rep(0,3), mat)
-# 
-# # Note that 200 simulations is insufficient and leads to negative prices.
-# plot(model_uncertainty_prices_mat[,2], type="l", col="black", ylab="Price", xlab="Years", xlim = c(0,years_for), ylim = c(0, 20000), main="S-forward Model Uncertainty under LC model and Wang Transform")
-# lines(model_uncertainty_prices_mat[,1], lty=2, col="red")
-# lines(model_uncertainty_prices_mat[,3], lty=2, col="green")
-# legend("topleft", legend=c("2.5 quantile", "Central Estimate","97.5 quantile"),
-#        col=c("black", "red", "green"), lty=c(2,1,2), cex=0.8)
 
+plot(LC_Std_Forward_Premium,
+     ylim = c( min(LC_Std_Forward_Premium, LC_Var_Forward_Premium), max(LC_Std_Forward_Premium, LC_Var_Forward_Premium)),
+     lwd=2,
+     type="l",
+     lty=2,
+     xlim = c(1,years_for+1),
+     main= "Survival forward risk premium generated from LC model",
+     ylab="Risk Premium in Percentage Basis",
+     xlab = "Years to Maturity of Survival Swap")
+lines(LC_Var_Forward_Premium, col="blue", lty=2)
+legend("bottomright", legend=c("Standard Deviation Principle", "Variance Principle"),
+       col=c("black", "red", "green", "blue"), lty=c(2,2), cex=0.8)
+
+######################################## SWAP ###########################################
+source("SurvivorSwap.R")
+LC_Wang_Swap_Premium = as.numeric( lapply(1:years_for+1, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Wang", nsim=nsim) ) )
+LC_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
+LC_Std_Swap_Premium = as.numeric(lapply(1:years_for+1, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
+LC_Var_Swap_Premium = as.numeric( lapply(1:years_for+1, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
+
+plot(LC_Wang_Swap_Premium)
+plot(LC_Prop_Swap_Premium)
+plot(LC_Std_Swap_Premium)
+plot(LC_Var_Swap_Premium)
