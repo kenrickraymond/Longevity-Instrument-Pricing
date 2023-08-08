@@ -80,7 +80,7 @@ survivorSwapPremium = function(k, years_for, notional_principal, lambda, model, 
     }
     else{
       S_t = forecasted_pxt
-      K_t = ( mean( rowSums(survival_rates_mat) ) + lambda * notional_principal * var( rowSums(survival_rates_mat) ) ) / years_for
+      K_t = ( mean( rowSums(survival_rates_mat) ) + lambda * notional_principal * (sd( rowSums(survival_rates_mat))^2 ) ) / years_for
     }
   }
   
