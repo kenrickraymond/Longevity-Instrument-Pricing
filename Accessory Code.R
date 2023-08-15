@@ -128,4 +128,9 @@
   price_upper
   price_lower
   
-
+#######
+  mxt <- LCfit$Dxt / LCfit$Ext
+  mxtHat <- fitted(LCfit, type = "rates")
+  
+  plot(mxt)
+  lines(mxtHat)

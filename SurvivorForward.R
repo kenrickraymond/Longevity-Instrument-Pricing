@@ -43,17 +43,27 @@ survivorForwardPremium = function(k, years_for, notional_principal, lambda, mode
   mod_mxt_sim = mod_sim$rates[k, years_for, ] # Indexed as [k, year, sim no.]
   mod_pxt_sim = 1 - mod_mxt_sim
   
+  survival_rates_mat = matrix(nrow=nsim, ncol=years_for)
+  i=1
+  while(i <= years_for){
+    survival_rates_mat[,i] = 1 - mod_sim$rates[k+i,i,]
+    i=i+1
+  }
+  
+  # Include survival rate at t = 0
+  # forecasted_pxt = c(mod_pxtHat, forecasted_pxt)
+  
   if (premium == "Wang") {
     risk_adjusted_pxt = pnorm(qnorm( forecasted_pxt ) - lambda)
     
-    S_t =  tail(risk_adjusted_pxt, n=1)
-    K_t = mean(risk_adjusted_pxt)
+    S_t =  mean(survival_rates_mat[,years_for])
+    K_t = tail(risk_adjusted_pxt, n=1)
   }
   if (premium == "Proportional") {
     risk_adjusted_pxt =  ( forecasted_pxt )^(1/lambda)
     
-    S_t =  tail(risk_adjusted_pxt, n=1)
-    K_t = mean(risk_adjusted_pxt)
+    S_t =  mean(survival_rates_mat[,years_for])
+    K_t = tail(risk_adjusted_pxt, n=1)
   }
   if (premium == "Stdev") {
     
