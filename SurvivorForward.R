@@ -54,16 +54,16 @@ survivorForwardPremium = function(k, years_for, notional_principal, lambda, mode
   # forecasted_pxt = c(mod_pxtHat, forecasted_pxt)
   
   if (premium == "Wang") {
-    risk_adjusted_pxt = pnorm(qnorm( forecasted_pxt ) - lambda)
+    risk_adjusted_pxt = pnorm(qnorm( survival_rates_mat[,years_for] ) - lambda)
     
     S_t =  mean(survival_rates_mat[,years_for])
-    K_t = tail(risk_adjusted_pxt, n=1)
+    K_t = mean( risk_adjusted_pxt )
   }
   if (premium == "Proportional") {
     risk_adjusted_pxt =  ( forecasted_pxt )^(1/lambda)
     
     S_t =  mean(survival_rates_mat[,years_for])
-    K_t = tail(risk_adjusted_pxt, n=1)
+    K_t = mean( risk_adjusted_pxt )
   }
   if (premium == "Stdev") {
     
