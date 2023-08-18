@@ -50,45 +50,26 @@ survivorForwardPremium = function(k, years_for, notional_principal, lambda, mode
     i=i+1
   }
   
-  # Include survival rate at t = 0
-  # forecasted_pxt = c(mod_pxtHat, forecasted_pxt)
-  
   if (premium == "Wang") {
-    risk_adjusted_pxt = pnorm(qnorm( survival_rates_mat[,years_for] ) - lambda)
-    
-    S_t =  mean(survival_rates_mat[,years_for])
-    K_t = mean( risk_adjusted_pxt )
+    S_t = mean( 1 - pnorm( qnorm( 1 - survival_rates_mat[,years_for]) - LCWanglambda) )
+    K_t = mean( 1 - pnorm( qnorm( 1 - survival_rates_mat[,years_for]) - 0) )
   }
   if (premium == "Proportional") {
     risk_adjusted_pxt =  ( forecasted_pxt )^(1/lambda)
     
-    S_t =  mean(survival_rates_mat[,years_for])
-    K_t = mean( risk_adjusted_pxt )
+    S_t = mean( survival_rates_mat[,years_for]^(1/lambda) )
+    K_t =  mean( survival_rates_mat[,years_for] )
   }
   if (premium == "Stdev") {
-    
-    if (years_for == 1){
-      # Pure premium for the first year, no risk loading
-      S_t = tail(forecasted_pxt, n=1)
-      K_t = mean( mod_pxt_sim )
-    }
-    else{
-      S_t = tail(forecasted_pxt, n=1)
-      K_t = mean( mod_pxt_sim ) + lambda * sd( mod_pxt_sim )
-    }
+      S_t = mean( survival_rates_mat[,years_for] )
+      K_t = mean( survival_rates_mat[,years_for] ) + lambda * sd( survival_rates_mat[,years_for] )
   }
   if (premium == "Var") {
-    
-    if (years_for == 1){
-      S_t = tail(forecasted_pxt, n=1)
-      K_t = mean( mod_pxt_sim )
-    }
-    else{
-      S_t = tail(forecasted_pxt, n=1)
-      K_t = mean( mod_pxt_sim ) + lambda * (sd( mod_pxt_sim ))^2
-    }
+    S_t = mean( survival_rates_mat[,years_for] )
+    K_t = mean( survival_rates_mat[,years_for] ) + lambda * var( survival_rates_mat[,years_for] )
   }
   
-  risk_premium = ( log(K_t / S_t) /  years_for )
+  # risk_premium = ( log(K_t / S_t) /  years_for )
+  risk_premium = (S_t / K_t) - 1
   return(risk_premium)
 }

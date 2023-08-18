@@ -21,11 +21,11 @@ getLambda = function(init_est, k, model, premium){
   
   wang_sse = function(lambda) {
     # Note that all other cohorts are implicitly linked to the first cohort year through LC_pxt[,1]
-    sum( payment * sum( discount_factor^(0:K-1) * pnorm(qnorm( diag(pxt) ) - lambda))  - total )^2
+    sum( payment * sum( discount_factor^(1:K+1) * pnorm(qnorm( diag(pxt) ) - lambda))  - total )^2
   }
   
   proportional_hazard_sse = function(lambda) {
-    sum( payment * sum( discount_factor^(0:K-1) * (diag(pxt))^(1/lambda) ) - total )^2
+    sum( payment * sum( discount_factor^(1:K+1) * (1 - (1 - diag(pxt))^(1/lambda) ) ) - total )^2
   }
   
   if (premium == "Wang") {
@@ -36,11 +36,11 @@ getLambda = function(init_est, k, model, premium){
   }
   if (premium == "Stdev") {
     # (Expectation of the Portoflio - Expectation of the Risk) / Stdev Risk
-    lambda = ( total - sum(discount_factor^(0:K-1) * payment * diag(pxt)) ) / sqrt( sum(discount_factor^(0:K-1) * payment  * diag(pxt) * (1 - diag(pxt)) ) )
+    lambda =  ( total - sum(discount_factor^(1:K+1) * payment * diag(pxt)) ) / sqrt( sum( discount_factor^(1:K+1) * payment  * diag(pxt) * ( discount_factor^(1:K+1) * payment * (1 - diag(pxt)))) )
   }
   if (premium == "Var") {
     # (Expectation of the Portoflio - Expectation of the Risk) / Var Risk
-    lambda = ( total - sum(discount_factor^(0:K-1) * payment * diag(pxt)) ) / sum(discount_factor^(0:K-1) * payment  * diag(pxt) * (1 - diag(pxt)) )
+    lambda =  ( total - sum(discount_factor^(1:K+1) * payment * diag(pxt)) ) / sum( discount_factor^(1:K+1) * payment  * diag(pxt) * ( discount_factor^(1:K+1) * payment * (1 - diag(pxt)))) 
   }
   
   return(lambda)

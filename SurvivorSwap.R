@@ -59,29 +59,12 @@ survivorSwapPremium = function(k, years_for, notional_principal, lambda, model, 
     K_t = sum(discount_factor^(1:years_for) / sum( discount_factor^(1:years_for) ) * risk_adjusted_pxt[1:years_for])
   }
   if (premium == "Stdev") {
-    
-    if (years_for == 1){
-      # Pure premium for the first year, no risk loading
-      S_t = forecasted_pxt
-      K_t = mean( survival_rates_mat ) 
-      
-    }
-    else{
       S_t = forecasted_pxt
       K_t = ( mean( rowSums(survival_rates_mat) ) + lambda * sd( rowSums(survival_rates_mat) ) ) / years_for
-    }
   }
   if (premium == "Var") {
-    
-    if (years_for == 1){
-      # Pure premium for the first year, no risk loading
-      S_t =  forecasted_pxt
-      K_t =  mean(forecasted_pxt) 
-    }
-    else{
       S_t = forecasted_pxt
       K_t = ( mean( rowSums(survival_rates_mat) ) + lambda * notional_principal * (sd( rowSums(survival_rates_mat))^2 ) ) / years_for
-    }
   }
   
   risk_premium = log( sum(K_t * discount_factor^(-(1:years_for)) / discount_factor_simple^(1:years_for) ) / sum( S_t / discount_factor_simple^(-(1:years_for)) ) )

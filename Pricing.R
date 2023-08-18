@@ -5,11 +5,11 @@ library(demography)
 library(StMoMo)
 library(lifecontingencies)
 source("getLambda.R")
-source("Credentials.R")
+# source("Credentials.R")
 
 ################################################################################################################################
 ########################################################## Preparation #########################################################
-################################################################################################################################
+###############################################################################################################################
 # The Data
 EWMaleData
 
@@ -57,44 +57,43 @@ table
 # plot(M6fit)
 
 # Generate h-year ahead forecasts
-years_for = 15
+years_for = 25
 LCfor = forecast(LCfit, h=years_for)
 RHfor = forecast(RHfit, h=years_for)
 CBDfor = forecast(CBDfit, h=years_for)
 M6for = forecast(M6fit, h=years_for)
-nsim = 1000
+nsim = 500
 ################################################################################################################################
 #################################################### Market Price of Risk ######################################################
 ################################################################################################################################
-payment = 6845
+payment = 5363
 total = 100000
 
 K = length(ages.fit) - 1
 k=5 # Reference age, in format of "first_age + k = target_age" 
 
-interest_rate = 0.05
+interest_rate = 0.017
 discount_factor = exp(- interest_rate)
-discount_factor_simple = 1/(1+interest_rate)
 
-LCWanglambda = getLambda(0.5, 5, "LC", "Wang")
-LCProplambda = getLambda(0.5, 5, "LC", "Proportional")
-LCStdevlambda = getLambda(0.5, 5, "LC", "Stdev")
-LCVarlambda = getLambda(-0.5, 5, "LC", "Var")
+LCWanglambda = getLambda(1, 5, "LC", "Wang")
+LCProplambda = getLambda(1.5, 5, "LC", "Proportional")
+LCStdevlambda = getLambda(1, 5, "LC", "Stdev")
+LCVarlambda = getLambda(1.5, 5, "LC", "Var")
 
 RHWanglambda = getLambda(0.5, 5, "RH", "Wang")
-RHProplambda = getLambda(0.5, 5, "RH", "Proportional")
-RHStdevlambda = getLambda(0.5, 5, "RH", "Stdev")
-RHVarlambda = getLambda(-0.5, 5, "RH", "Var")
+RHProplambda = getLambda(1.5, 5, "RH", "Proportional")
+RHStdevlambda = getLambda(1, 5, "RH", "Stdev")
+RHVarlambda = getLambda(1.5, 5, "RH", "Var")
 
 CBDWanglambda = getLambda(0.5, 5, "CBD", "Wang")
-CBDProplambda = getLambda(0.5, 5, "CBD", "Proportional")
-CBDStdevlambda = getLambda(0.5, 5, "CBD", "Stdev")
-CBDVarlambda = getLambda(-0.5, 5, "CBD", "Var")
+CBDProplambda = getLambda(1.5, 5, "CBD", "Proportional")
+CBDStdevlambda = getLambda(1, 5, "CBD", "Stdev")
+CBDVarlambda = getLambda(1.5, 5, "CBD", "Var")
 
 M6Wanglambda = getLambda(0.5, 5, "M6", "Wang")
-M6Proplambda = getLambda(0.5, 5, "M6", "Proportional")
-M6Stdevlambda = getLambda(0.5, 5, "M6", "Stdev")
-M6Varlambda = getLambda(-0.5, 5, "M6", "Var")
+M6Proplambda = getLambda(1.5, 5, "M6", "Proportional")
+M6Stdevlambda = getLambda(1, 5, "M6", "Stdev")
+M6Varlambda = getLambda(1.5, 5, "M6", "Var")
 
 lambda_table = data.frame(matrix(nrow = 4, ncol = 4, c(LCWanglambda, LCProplambda, LCStdevlambda, LCVarlambda,
                                                        RHWanglambda, RHProplambda, RHStdevlambda, RHVarlambda,
@@ -111,39 +110,5 @@ LC_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) su
 LC_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
 LC_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
 
-RH_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, RHWanglambda, "RH", "Wang", nsim=nsim) ) )
-RH_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, RHProplambda, "RH", "Proportional", nsim=nsim) ) )
-RH_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, RHStdevlambda, "RH", "Stdev", nsim=nsim) ) )
-RH_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, RHVarlambda, "RH", "Var", nsim=nsim) ) )
-
-CBD_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, CBDWanglambda, "CBD", "Wang", nsim=nsim) ) )
-CBD_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, CBDProplambda, "CBD", "Proportional", nsim=nsim) ) )
-CBD_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, CBDStdevlambda, "CBD", "Stdev", nsim=nsim) ) )
-CBD_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, CBDVarlambda, "CBD", "Var", nsim=nsim) ) )
-
-M6_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, M6Wanglambda, "M6", "Wang", nsim=nsim) ) )
-M6_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, M6Proplambda, "M6", "Proportional", nsim=nsim) ) )
-M6_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, M6Stdevlambda, "M6", "Stdev", nsim=nsim) ) )
-M6_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, M6Varlambda, "M6", "Var", nsim=nsim) ) )
-
-######################################## SWAP ###########################################
-source("SurvivorSwap.R")
-LC_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCWanglambda, "LC", "Wang", nsim=nsim) ) )
-LC_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
-LC_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
-LC_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
-
-RH_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, RHWanglambda, "RH", "Wang", nsim=nsim) ) )
-RH_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, RHProplambda, "RH", "Proportional", nsim=nsim) ) )
-RH_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, RHStdevlambda, "RH", "Stdev", nsim=nsim) ) )
-RH_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, RHVarlambda, "RH", "Var", nsim=nsim) ) )
-
-CBD_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, CBDWanglambda, "CBD", "Wang", nsim=nsim) ) )
-CBD_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, CBDProplambda, "CBD", "Proportional", nsim=nsim) ) )
-CBD_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, CBDStdevlambda, "CBD", "Stdev", nsim=nsim) ) )
-CBD_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, CBDVarlambda, "CBD", "Var", nsim=nsim) ) )
-
-M6_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, M6Wanglambda, "M6", "Wang", nsim=nsim) ) )
-M6_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, M6Proplambda, "M6", "Proportional", nsim=nsim) ) )
-M6_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, M6Stdevlambda, "M6", "Stdev", nsim=nsim) ) )
-M6_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, M6Varlambda, "M6", "Var", nsim=nsim) ) )
+plot(LC_Prop_Forward_Premium)
+plot(LC_Var_Forward_Premium)
