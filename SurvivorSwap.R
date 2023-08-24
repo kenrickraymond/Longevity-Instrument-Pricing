@@ -34,11 +34,6 @@ survivorSwapPremium = function(k, years_for, notional_principal, lambda, model, 
     forecasted_pxt <<- 1 - mod_for$rates[k,]
   }
   
-  mod_mxtHat <- fitted(mod_fit, type = "rates")[k,]
-  mod_pxtHat = 1 - mod_mxtHat
-  mod_mxt_sim = diag(mod_sim$rates[k, , ]) # Indexed as [k, year, sim no.]
-  mod_pxt_sim = 1 - mod_mxt_sim
-  
   survival_rates_mat = matrix(nrow=nsim, ncol=years_for)
   i=1
   while(i <= years_for){
@@ -47,10 +42,8 @@ survivorSwapPremium = function(k, years_for, notional_principal, lambda, model, 
   }
   
   if (premium == "Wang") {
-    risk_adjusted_pxt = pnorm(qnorm(forecasted_pxt) - lambda)
-    
-    S_t = risk_adjusted_pxt
-    K_t = sum(discount_factor^(1:years_for) / sum( discount_factor^(1:years_for) ) * risk_adjusted_pxt[1:years_for])
+    S_t = sum( discount_factor^(1:years_for) * ( 1 - pnorm( qnorm( 1 - colMeans(survival_rates_mat)) - LCWanglambda) ) )
+    K_t = sum( discount_factor^(1:years_for) * ( 1 - pnorm( qnorm( 1 - colMeans(survival_rates_mat)) - 0) ) )
   }
   if (premium == "Proportional") {
     risk_adjusted_pxt = (forecasted_pxt)^(1/lambda)
@@ -67,6 +60,7 @@ survivorSwapPremium = function(k, years_for, notional_principal, lambda, model, 
       K_t = ( mean( rowSums(survival_rates_mat) ) + lambda * notional_principal * (sd( rowSums(survival_rates_mat))^2 ) ) / years_for
   }
   
-  risk_premium = log( sum(K_t * discount_factor^(-(1:years_for)) / discount_factor_simple^(1:years_for) ) / sum( S_t / discount_factor_simple^(-(1:years_for)) ) )
+  risk_premium = (S_t / K_t) - 1
+  # risk_premium = log( sum(K_t * discount_factor^(-(1:years_for)) / discount_factor_simple^(1:years_for) ) / sum( S_t / discount_factor_simple^(-(1:years_for)) ) )
   return(risk_premium)
 }

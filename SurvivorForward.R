@@ -37,12 +37,6 @@ survivorForwardPremium = function(k, years_for, notional_principal, lambda, mode
     forecasted_pxt <<- 1 - mod_for$rates[k,]
   }
   
-  # Model implied fitted rate
-  mod_mxtHat <- fitted(mod_fit, type = "rates")[k,]
-  mod_pxtHat = 1 - mod_mxtHat
-  mod_mxt_sim = mod_sim$rates[k, years_for, ] # Indexed as [k, year, sim no.]
-  mod_pxt_sim = 1 - mod_mxt_sim
-  
   survival_rates_mat = matrix(nrow=nsim, ncol=years_for)
   i=1
   while(i <= years_for){
@@ -51,25 +45,22 @@ survivorForwardPremium = function(k, years_for, notional_principal, lambda, mode
   }
   
   if (premium == "Wang") {
-    S_t = mean( 1 - pnorm( qnorm( 1 - survival_rates_mat[,years_for]) - LCWanglambda) )
-    K_t = mean( 1 - pnorm( qnorm( 1 - survival_rates_mat[,years_for]) - 0) )
+    S_t = discount_factor^(years_for) * mean( 1 - pnorm( qnorm( 1 - survival_rates_mat[,years_for]) - LCWanglambda) )
+    K_t = discount_factor^(years_for) * mean( 1 - pnorm( qnorm( 1 - survival_rates_mat[,years_for]) - 0) )
   }
   if (premium == "Proportional") {
-    risk_adjusted_pxt =  ( forecasted_pxt )^(1/lambda)
-    
-    S_t = mean( survival_rates_mat[,years_for]^(1/lambda) )
-    K_t =  mean( survival_rates_mat[,years_for] )
+    S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for]^(1/lambda) )
+    K_t =  discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
   }
   if (premium == "Stdev") {
-      S_t = mean( survival_rates_mat[,years_for] )
-      K_t = mean( survival_rates_mat[,years_for] ) + lambda * sd( survival_rates_mat[,years_for] )
+      S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
+      K_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] ) + lambda * sd( survival_rates_mat[,years_for] )
   }
   if (premium == "Var") {
-    S_t = mean( survival_rates_mat[,years_for] )
-    K_t = mean( survival_rates_mat[,years_for] ) + lambda * var( survival_rates_mat[,years_for] )
+    S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
+    K_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] ) + lambda * var( survival_rates_mat[,years_for] )
   }
   
-  # risk_premium = ( log(K_t / S_t) /  years_for )
   risk_premium = (S_t / K_t) - 1
   return(risk_premium)
 }

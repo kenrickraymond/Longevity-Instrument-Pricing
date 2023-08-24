@@ -110,5 +110,14 @@ LC_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) su
 LC_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
 LC_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
 
-plot(LC_Prop_Forward_Premium)
-plot(LC_Var_Forward_Premium)
+source("SurvivorSwap.R")
+LC_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCWanglambda, "LC", "Wang", nsim=nsim) ) )
+
+# LCsim = simulate(LCfit, nsim = nsim, h = years_for+1)
+# survival_rates_mat = matrix(nrow=nsim, ncol=years_for)
+# i=1
+# while(i <= years_for){
+#   survival_rates_mat[,i] = 1 - LCsim$rates[k+i,i,]
+#   i=i+1
+# }
+# colMeans(survival_rates_mat)
