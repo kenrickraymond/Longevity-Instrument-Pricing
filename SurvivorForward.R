@@ -53,12 +53,12 @@ survivorForwardPremium = function(k, years_for, notional_principal, lambda, mode
     K_t =  discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
   }
   if (premium == "Stdev") {
-      S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
-      K_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] ) + lambda * sd( survival_rates_mat[,years_for] )
+      S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] ) + lambda * sd( survival_rates_mat[,years_for] )
+      K_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
   }
   if (premium == "Var") {
-    S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
-    K_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] ) + lambda * var( survival_rates_mat[,years_for] )
+    S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] ) + lambda * var( survival_rates_mat[,years_for] )
+    K_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
   }
   
   risk_premium = (S_t / K_t) - 1

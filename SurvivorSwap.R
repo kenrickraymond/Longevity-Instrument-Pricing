@@ -46,18 +46,29 @@ survivorSwapPremium = function(k, years_for, notional_principal, lambda, model, 
     K_t = sum( discount_factor^(1:years_for) * ( 1 - pnorm( qnorm( 1 - colMeans(survival_rates_mat)) - 0) ) )
   }
   if (premium == "Proportional") {
-    risk_adjusted_pxt = (forecasted_pxt)^(1/lambda)
-    
-    S_t =  risk_adjusted_pxt
-    K_t = sum(discount_factor^(1:years_for) / sum( discount_factor^(1:years_for) ) * risk_adjusted_pxt[1:years_for])
+    S_t = sum( discount_factor^(1:years_for) * ( colMeans(survival_rates_mat)^(1/lambda) ) )
+    K_t = sum( discount_factor^(1:years_for) * ( colMeans(survival_rates_mat) ) )
   }
   if (premium == "Stdev") {
-      S_t = forecasted_pxt
-      K_t = ( mean( rowSums(survival_rates_mat) ) + lambda * sd( rowSums(survival_rates_mat) ) ) / years_for
+    # The colMeans(.) function returns NA for list inputs.
+    if (years_for == 1){
+      S_t = sum(discount_factor^(1:years_for) * (mean(survival_rates_mat)))
+      K_t = sum(discount_factor^(1:years_for) * (mean(survival_rates_mat)))
+    }
+    else{ 
+      S_t = sum(discount_factor^(1:years_for) * (colMeans(survival_rates_mat) + lambda * sd( colMeans(survival_rates_mat ) ) ) )
+      K_t = sum(discount_factor^(1:years_for) * colMeans(survival_rates_mat) )
+    }
   }
   if (premium == "Var") {
-      S_t = forecasted_pxt
-      K_t = ( mean( rowSums(survival_rates_mat) ) + lambda * notional_principal * (sd( rowSums(survival_rates_mat))^2 ) ) / years_for
+    if (years_for == 1){
+      S_t = sum(discount_factor^(1:years_for) * (mean(survival_rates_mat)))
+      K_t = sum(discount_factor^(1:years_for) * (mean(survival_rates_mat)))
+    }
+    else{
+      S_t = sum(discount_factor^(1:years_for) * (colMeans(survival_rates_mat) + lambda * var( colMeans(survival_rates_mat ) ) ) )
+      K_t = sum(discount_factor^(1:years_for) * colMeans(survival_rates_mat) )  
+    }
   }
   
   risk_premium = (S_t / K_t) - 1
