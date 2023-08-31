@@ -67,10 +67,10 @@ nsim = 500
 #################################################### Market Price of Risk ######################################################
 ################################################################################################################################
 # 2012 Rates for UK Population
-payment = 5400
+payment = 5700
 total = 100000
 
-K = length(ages.fit) - 1
+K = length(ages.fit)
 k=5 # Reference age, in format of "first_age + k = target_age" 
 
 interest_rate = 0.017
@@ -80,6 +80,18 @@ LCWanglambda = getLambda(1, 5, "LC", "Wang")
 LCProplambda = getLambda(1.5, 5, "LC", "Proportional")
 LCStdevlambda = getLambda(1, 5, "LC", "Stdev")
 LCVarlambda = getLambda(1.5, 5, "LC", "Var")
+
+
+LCDuallambda = getLambda(1.3, 5, "LC", "Dual")
+LCDuallambda
+LCGinilambda = getLambda(0.5, 5, "LC", "Gini")
+LCGinilambda
+LCExponentiallambda = getLambda(1, 5, "LC", "Exponential")
+LCExponentiallambda
+LCLoglambda = getLambda(1, 5, "LC", "Log")
+
+# LC_lambda_table = data.frame(matrix(nrow = 8, ncol = 1, c(LCWanglambda, LCProplambda, LCStdevlambda, LCVarlambda, LCDuallambda, LCGinilambda, LCExponentiallambda, LCLoglambda)))
+
 
 RHWanglambda = getLambda(0.5, 5, "RH", "Wang")
 RHProplambda = getLambda(1.5, 5, "RH", "Proportional")
@@ -106,17 +118,14 @@ colnames(lambda_table) = c("LC","RH","CBD","M6")
 lambda_table
 
 
-source("SurvivorForward.R")
-LC_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCWanglambda, "LC", "Wang", nsim=nsim) ) )
-LC_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
-LC_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
-LC_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
-
-source("SurvivorSwap.R")
-LC_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Wang", nsim=nsim) ) )
-LC_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
-LC_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
-LC_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
-
-LC_Std_Swap_Premium
-LC_Var_Swap_Premium       
+# source("SurvivorForward.R")
+# LC_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCWanglambda, "LC", "Wang", nsim=nsim) ) )
+# LC_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
+# LC_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
+# LC_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
+# 
+# source("SurvivorSwap.R")
+# LC_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Wang", nsim=nsim) ) )
+# LC_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
+# LC_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
+# LC_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
