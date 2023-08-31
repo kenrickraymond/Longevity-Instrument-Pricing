@@ -1,4 +1,4 @@
-survivorForwardPremium = function(k, years_for, notional_principal, lambda, model, premium, nsim=100){
+survivorForwardPremium = function(years_for, notional_principal, lambda, model, premium, nsim=100){
   model = toString(model)
   premium = toString(premium)
   # Model Selection
@@ -23,22 +23,9 @@ survivorForwardPremium = function(k, years_for, notional_principal, lambda, mode
     mod_sim = simulate(M6fit, nsim = nsim, h = years_for+1)
   }
   
-  # Forecasting
-  ## First year
-  if (years_for == 1){
-    # Set as global variables
-    forecasted_qxt <<- mod_for$rates[k]
-    forecasted_pxt <<- 1 - mod_for$rates[k]
-    
-  }
-  ## Other years
-  else{
-    forecasted_qxt <<- mod_for$rates[k,]
-    forecasted_pxt <<- 1 - mod_for$rates[k,]
-  }
-  
   survival_rates_mat = matrix(nrow=nsim, ncol=years_for)
   i=1
+  k=5
   while(i <= years_for){
     survival_rates_mat[,i] = 1 - mod_sim$rates[k+i,i,]
     i=i+1

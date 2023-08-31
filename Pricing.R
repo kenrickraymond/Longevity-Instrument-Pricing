@@ -5,7 +5,6 @@ library(demography)
 library(StMoMo)
 library(lifecontingencies)
 source("getLambda.R")
-# source("Credentials.R")
 
 ################################################################################################################################
 ########################################################## Preparation #########################################################
@@ -81,14 +80,10 @@ LCProplambda = getLambda(1.5, 5, "LC", "Proportional")
 LCStdevlambda = getLambda(1, 5, "LC", "Stdev")
 LCVarlambda = getLambda(1.5, 5, "LC", "Var")
 
-
 LCDuallambda = getLambda(1.3, 5, "LC", "Dual")
-LCDuallambda
 LCGinilambda = getLambda(0.5, 5, "LC", "Gini")
-LCGinilambda
 LCExponentiallambda = getLambda(1, 5, "LC", "Exponential")
-LCExponentiallambda
-LCLoglambda = getLambda(1, 5, "LC", "Log")
+
 
 # LC_lambda_table = data.frame(matrix(nrow = 8, ncol = 1, c(LCWanglambda, LCProplambda, LCStdevlambda, LCVarlambda, LCDuallambda, LCGinilambda, LCExponentiallambda, LCLoglambda)))
 

@@ -1,4 +1,4 @@
-getLambda = function(init_est, k, model, premium){
+getLambda = function(init_est, model, premium){
   model = toString(model)
   premium = toString(premium)
   
