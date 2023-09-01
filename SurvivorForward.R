@@ -1,4 +1,4 @@
-survivorForwardPremium = function(years_for, notional_principal, lambda, model, premium, nsim=100){
+survivorForwardPremium = function(years_for, lambda, model, premium, nsim=100){
   model = toString(model)
   premium = toString(premium)
   # Model Selection
@@ -39,13 +39,29 @@ survivorForwardPremium = function(years_for, notional_principal, lambda, model, 
     S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for]^(1/lambda) )
     K_t =  discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
   }
+  if (premium == "Dual") { # Check
+    S_t = discount_factor^(years_for) * mean(1 -  (1 - survival_rates_mat[,years_for])^(lambda) )
+    K_t =  discount_factor^(years_for) * mean(1 -  (1 - survival_rates_mat[,years_for]) )
+  }
+  if (premium == "Gini") { # Check
+    S_t = discount_factor^(years_for) * ( mean( (1 + lambda) * survival_rates_mat[,years_for] ) - lambda * mean( survival_rates_mat[,years_for]^2 ) )
+    K_t =  discount_factor^(years_for) * mean( (1) * survival_rates_mat[,years_for] )
+  }
+  if (premium == "Exponential") { # I don't know if this K_t is correct
+    S_t = discount_factor^(years_for) * mean( 1 - exp( - lambda * survival_rates_mat[,years_for] ) )/(1-exp(- lambda) )
+    K_t =  discount_factor^(years_for) * mean( 1 - exp( -1 * survival_rates_mat[,years_for] ) )/(1-exp(-1) )
+  }
   if (premium == "Stdev") {
-      S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] ) + lambda * sd( survival_rates_mat[,years_for] )
+      S_t = discount_factor^(years_for) * ( mean( survival_rates_mat[,years_for] ) + lambda * sd( survival_rates_mat[,years_for] ) )
       K_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
   }
   if (premium == "Var") {
-    S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] ) + lambda * var( survival_rates_mat[,years_for] )
+    S_t = discount_factor^(years_for) * ( mean( survival_rates_mat[,years_for] ) + lambda * var( survival_rates_mat[,years_for] ) )
     K_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
+  }
+  if (premium == "Mad") {
+    S_t = discount_factor^(years_for) * ( quantile(survival_rates_mat[,years_for], probs = 0.5, na.rm = FALSE) + lambda * mad( survival_rates_mat[,years_for] ) )
+    K_t = discount_factor^(years_for) * quantile(survival_rates_mat[,years_for], probs = 0.5, na.rm = FALSE)
   }
   
   risk_premium = (S_t / K_t) - 1
