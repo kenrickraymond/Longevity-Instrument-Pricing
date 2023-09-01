@@ -1,25 +1,32 @@
-survivorSwapPremium = function(years_for, notional_principal, lambda, model, premium, nsim=100){
+# Variables that need to be defined in the global environment:
+# payment
+# total
+# interest_rate -> discount_factor
+# fitted mortality model i.e. LCfit, RHfit, CBDfit, M6fit
+
+# User-defined inputs:
+# years_for = forecasting horizon (years_for ahead swap)
+# lambda: use getLambda.R to obtain lambda value for model and premium
+# model: LC, RH, CBD, M6
+# premium: Wang, Proportional, Dual, Gini, Exponential, Stdev, Var, Mad
+# nsim: number of future mortality scenarios generated
+
+# Outputs: list of risk-adjustment term for survival swap containing the risk-adjustment term for each of 1,2,...,years_for years
+
+survivorSwapPremium = function(years_for, lambda, model, premium, nsim=100){
   model = toString(model)
   premium = toString(premium)
   
   if (model == "LC"){
-    mod_for = forecast(LCfit, h=years_for)
-    mod_fit = LCfit
     mod_sim = simulate(LCfit, nsim = nsim, h = years_for+1)
   }
   if (model == "RH"){
-    mod_for = forecast(RHfit, h=years_for)
-    mod_fit = RHfit
     mod_sim = simulate(RHfit, nsim = nsim, h = years_for+1)
   }
   if (model == "CBD"){
-    mod_for = forecast(CBDfit, h=years_for)
-    mod_fit = CBDfit
     mod_sim = simulate(CBDfit, nsim = nsim, h = years_for+1)
   }
   if (model == "M6"){
-    mod_for = forecast(M6fit, h=years_for)
-    mod_fit = M6fit
     mod_sim = simulate(M6fit, nsim = nsim, h = years_for+1)
   }
   
@@ -39,9 +46,20 @@ survivorSwapPremium = function(years_for, notional_principal, lambda, model, pre
     S_t = sum( discount_factor^(1:years_for) * ( colMeans(survival_rates_mat)^(1/lambda) ) )
     K_t = sum( discount_factor^(1:years_for) * ( colMeans(survival_rates_mat) ) )
   }
+  if (premium == "Dual") {
+    S_t = sum( discount_factor^(1:years_for) * (1 -  (1 - colMeans(survival_rates_mat) )^(lambda) ) )
+    K_t = sum( discount_factor^(1:years_for) * (1 -  (1 - colMeans( survival_rates_mat) ) ) )
+  }
+  if (premium == "Gini") {
+    S_t = sum( discount_factor^(1:years_for) * ( ( (1 + lambda) * colMeans( survival_rates_mat ) ) - lambda * colMeans( survival_rates_mat )^2 ) )
+    K_t =  sum( discount_factor^(1:years_for) * ( (1) * colMeans( survival_rates_mat ) ) )
+  }
+  if (premium == "Exponential") {
+    S_t = sum( discount_factor^(1:years_for) * ( 1 - exp( - lambda * colMeans( survival_rates_mat ) ) )/(1-exp(- lambda) ) )
+    K_t =  sum( discount_factor^(1:years_for) * ( 1 - exp( -1 * colMeans( survival_rates_mat ) ) )/(1-exp(-1) ) )
+  }
   if (premium == "Stdev") {
-    # The colMeans(.) function returns NA for list inputs.
-    if (years_for == 1){
+    if (years_for == 1){ # The colMeans(.) function returns NA for single-value inputs.
       S_t = sum(discount_factor^(1:years_for) * (mean(survival_rates_mat)))
       K_t = sum(discount_factor^(1:years_for) * (mean(survival_rates_mat)))
     }
@@ -60,8 +78,17 @@ survivorSwapPremium = function(years_for, notional_principal, lambda, model, pre
       K_t = sum(discount_factor^(1:years_for) * colMeans(survival_rates_mat) )  
     }
   }
+  if (premium == "Mad") {
+    if (years_for == 1){
+      S_t = sum(discount_factor^(1:years_for) * (mean(survival_rates_mat)))
+      K_t = sum(discount_factor^(1:years_for) * (mean(survival_rates_mat)))
+    }
+    else{
+      S_t = sum(discount_factor^(1:years_for) * ( quantile( colMeans(survival_rates_mat), probs = 0.5, na.rm = FALSE) + lambda * mad( colMeans(survival_rates_mat) ) ) )
+      K_t = sum(discount_factor^(1:years_for) * quantile( colMeans(survival_rates_mat), probs = 0.5, na.rm = FALSE) )  
+    }
+  }
   
   risk_premium = (S_t / K_t) - 1
-  # risk_premium = log( sum(K_t * discount_factor^(-(1:years_for)) / discount_factor_simple^(1:years_for) ) / sum( S_t / discount_factor_simple^(-(1:years_for)) ) )
   return(risk_premium)
 }

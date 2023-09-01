@@ -1,10 +1,14 @@
 # Reduce chances of scientific notation
 options(scipen=999)
 
+# Generic libraries used
 library(demography)
 library(StMoMo)
 library(lifecontingencies)
 library(stats)
+
+# Notation:
+# Years_for is the number of years the mortality model is forecasted. Years_for is also the longest time horizon for which we are pricing instruments.
 
 ################################################################################################################################
 ########################################################## Preparation #########################################################
@@ -18,10 +22,7 @@ EWMaleIniData = central2initial(EWMaleData)
 # Restrict the Data
 ages.fit = 60:89
 years.fit = seq(1961,2011,1)
-no_years_fitted = length(years.fit)
-
-# Matrix of age weights. See StMoMo vignette page 16 (https://cran.r-project.org/web/packages/StMoMo/vignettes/StMoMoVignette.pdf)
-wxt = genWeightMat(ages = ages.fit, years = years.fit)
+wxt = genWeightMat(ages = ages.fit, years = years.fit) # Matrix of age weights. See StMoMo vignette page 16 (https://cran.r-project.org/web/packages/StMoMo/vignettes/StMoMoVignette.pdf)
 
 # InitialiZe mortality models
 LC = lc(link = "log")
@@ -35,8 +36,8 @@ RHfit = fit(RH, data=EWMaleData, ages.fit=ages.fit, years.fit=years.fit)
 CBDfit = fit(CBD, data = EWMaleIniData, ages.fit = ages.fit, years.fit=years.fit, wxt = wxt)
 M6fit = fit(M6, data = EWMaleIniData, ages.fit = ages.fit, years.fit=years.fit, wxt = wxt)
 
-### Goodness of Fit
-table = data.frame(matrix(nrow = 4, ncol =2, c(AIC(LCfit),
+# Goodness of Fit
+goodness_of_fit_table = data.frame(matrix(nrow = 4, ncol = 2, c(AIC(LCfit),
                                                AIC(RHfit),
                                                BIC(LCfit),
                                                BIC(RHfit),
@@ -45,9 +46,9 @@ table = data.frame(matrix(nrow = 4, ncol =2, c(AIC(LCfit),
                                                BIC(CBDfit),
                                                BIC(M6fit))
 ))
-colnames(table) = c("AIC","BIC")
-rownames(table) = c("LC","RH","CBD","M6")
-table
+colnames(goodness_of_fit_table) = c("AIC","BIC")
+rownames(goodness_of_fit_table) = c("LC","RH","CBD","M6")
+goodness_of_fit_table
 
 # Plot fitted models
 # plot(LCfit)
@@ -55,35 +56,28 @@ table
 # plot(CBDfit)
 # plot(M6fit)
 
-# Generate h-year ahead forecasts
-years_for = 25
-LCfor = forecast(LCfit, h=years_for)
-RHfor = forecast(RHfit, h=years_for)
-CBDfor = forecast(CBDfit, h=years_for)
-M6for = forecast(M6fit, h=years_for)
-nsim = 500
+# Parameters for forecasting and simulations
+years_for = 25 # Generate h-year ahead forecasts
+nsim = 500 # Number of simulations when simulating future mortality scenarios
+
 ################################################################################################################################
-#################################################### Market Price of Risk ######################################################
+#################################################### Pricing Parameter #########################################################
 ################################################################################################################################
-# 2012 Rates for UK Population
-payment = 5700
+
+# Parameters for obtaining the pricing parameter
+# We obtain the pricing parameter using annuity rates for the reference population since market prices for longevity-linked instruments are not publically available
+payment = 5700 # 2012 Rates for UK Population
 total = 100000
-
-K = length(ages.fit)
-k=5 # Reference age, in format of "first_age + k = target_age" 
-
-interest_rate = 0.017
+interest_rate = 0.017 # Based on the 15-year Gilt rate
 discount_factor = exp(- interest_rate)
 
 source("getLambda.R")
-# Initial estimation is required because of root-finding solution
-LCWanglambda = getLambda(1, "LC", "Wang")
+LCWanglambda = getLambda(1, "LC", "Wang") # Initial estimation is required because of root-finding solution
 LCProplambda = getLambda(1.5, "LC", "Proportional")
 LCDuallambda = getLambda(1.3, "LC", "Dual")
 LCGinilambda = getLambda(0.5, "LC", "Gini")
 LCExponentiallambda = getLambda(1, "LC", "Exponential")
-# No initial estimation is necessary, closed form expressions for lambda are derived for real world measures
-LCStdevlambda = getLambda(0, "LC", "Stdev")
+LCStdevlambda = getLambda(0, "LC", "Stdev") # No initial estimation is necessary, closed form expressions for lambda are derived for real world measures
 LCVarlambda = getLambda(0, "LC", "Var")
 LCMadlambda = getLambda(0, "LC", "Mad")
 
@@ -118,12 +112,14 @@ lambda_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWanglambda, LCProplambd
                                                           RHWanglambda, RHProplambda, RHDuallambda, RHGinilambda, RHExponentiallambda, RHStdevlambda, RHVarlambda, RHMadlambda,
                                                           CBDWanglambda, CBDProplambda, CBDDuallambda, CBDGinilambda, CBDExponentiallambda, CBDStdevlambda, CBDVarlambda, CBDMadlambda,
                                                           M6Wanglambda, M6Proplambda, M6Duallambda, M6Ginilambda, M6Exponentiallambda, M6Stdevlambda, M6Varlambda, M6Madlambda)
-                ))
-
+))
 rownames(lambda_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(lambda_table) = c("LC","RH","CBD","M6")
 lambda_table
 
+################################################################################################################################
+#################################################### Adjustment Parameter ######################################################
+################################################################################################################################
 source("SurvivorForward.R")
 LC_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, LCWanglambda, "LC", "Wang", nsim=nsim) ) )
 LC_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
@@ -134,9 +130,14 @@ LC_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) surv
 LC_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, LCVarlambda, "LC", "Var", nsim=nsim) ) )
 LC_Mad_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, LCMadlambda, "LC", "Mad", nsim=nsim) ) )
 
-# 
-# source("SurvivorSwap.R")
-# LC_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Wang", nsim=nsim) ) )
-# LC_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
-# LC_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
-# LC_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(5, years_for, notional_principal=payment, LCVarlambda, "LC", "Var", nsim=nsim) ) )
+
+source("SurvivorSwap.R")
+LC_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCWanglambda, "LC", "Wang", nsim=nsim) ) )
+LC_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCProplambda, "LC", "Proportional", nsim=nsim) ) )
+LC_Dual_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCDuallambda, "LC", "Dual", nsim=nsim) ) )
+LC_Gini_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCGinilambda, "LC", "Gini", nsim=nsim) ) )
+LC_Exponential_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCExponentiallambda, "LC", "Exponential", nsim=nsim) ) )
+LC_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
+LC_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCVarlambda, "LC", "Var", nsim=nsim) ) )
+LC_Mad_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCMadlambda, "LC", "Mad", nsim=nsim) ) )
+

@@ -1,11 +1,10 @@
-premium_set = c(LC_Wang_Forward_Premium, LC_Prop_Forward_Premium, LC_Dual_Forward_Premium, LC_Gini_Forward_Premium, LC_Exponential_Forward_Premium, LC_Std_Forward_Premium, LC_Var_Forward_Premium, LC_Mad_Forward_Premium)
-
 plot(LC_Wang_Forward_Premium,
-     ylim = c( min(premium_set), max(premium_set)),
+     ylim = c( min(c(LC_Wang_Forward_Premium, LC_Prop_Forward_Premium, LC_Dual_Forward_Premium, LC_Gini_Forward_Premium, LC_Exponential_Forward_Premium, LC_Std_Forward_Premium, LC_Var_Forward_Premium, LC_Mad_Forward_Premium)),
+               max(c(LC_Wang_Forward_Premium, LC_Prop_Forward_Premium, LC_Dual_Forward_Premium, LC_Gini_Forward_Premium, LC_Exponential_Forward_Premium, LC_Std_Forward_Premium, LC_Var_Forward_Premium, LC_Mad_Forward_Premium))),
      lwd=2,
      type="l",
      xlim = c(1,years_for),
-     # main= "Survival forward risk premium generated from LC model",
+     main = "LC model",
      ylab="Risk Premium in Decimal Basis",
      xlab = "Years to Maturity of Survivor Forward")
 lines(LC_Prop_Forward_Premium, lwd = 2, col="blue")
@@ -18,8 +17,24 @@ lines(LC_Mad_Forward_Premium, lwd = 2, col="gray", lty=2)
 legend("topleft", legend=c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad"),
        col=c("black", "blue", "red", "gold", "green", "purple", "orange", "gray"), lty=c(1,1,1,1,1,2,2,2), cex=0.8)
 
-
-# Figure out how I'm gonna do plotting
+plot(LC_Wang_Swap_Premium,
+     ylim = c( min(c(LC_Wang_Swap_Premium, LC_Prop_Swap_Premium, LC_Dual_Swap_Premium, LC_Gini_Swap_Premium, LC_Exponential_Swap_Premium, LC_Std_Swap_Premium, LC_Var_Swap_Premium, LC_Mad_Swap_Premium)),
+               max(c(LC_Wang_Swap_Premium, LC_Prop_Swap_Premium, LC_Dual_Swap_Premium, LC_Gini_Swap_Premium, LC_Exponential_Swap_Premium, LC_Std_Swap_Premium, LC_Var_Swap_Premium, LC_Mad_Swap_Premium))),
+     lwd=2,
+     type="l",
+     xlim = c(1,years_for),
+     main= "LC model",
+     ylab="Risk Premium in Decimal Basis",
+     xlab = "Years to Maturity of Survivor Swap")
+lines(LC_Prop_Swap_Premium, lwd = 2, col="blue")
+lines(LC_Dual_Swap_Premium, lwd = 2, col="red")
+lines(LC_Gini_Swap_Premium, lwd = 2, col="gold")
+lines(LC_Exponential_Swap_Premium, lwd = 2, col="green")
+lines(LC_Std_Swap_Premium, lwd = 2, col="purple", lty=2)
+lines(LC_Var_Swap_Premium, lwd = 2, col="orange", lty=2)
+lines(LC_Mad_Swap_Premium, lwd = 2, col="gray", lty=2)
+legend("topleft", legend=c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad"),
+       col=c("black", "blue", "red", "gold", "green", "purple", "orange", "gray"), lty=c(1,1,1,1,1,2,2,2), cex=0.8)
 
 # # Survivor Forward
 #  # LC
