@@ -2,9 +2,6 @@ getLambda = function(init_est, model, premium){
   model = toString(model)
   premium = toString(premium)
   
-  # We assume that the annuity starts paying out at age 65 and that the entire reference population is dead by age 90.
-  age_length = 25
-  
   if (model == "LC"){
     qxt = LCfit$Dxt / LCfit$Ext
     # We assume that annuities pay individuals beginning aged 65
@@ -22,6 +19,9 @@ getLambda = function(init_est, model, premium){
     qxt = M6fit$Dxt / M6fit$Ext
     pxt = 1 - qxt[6:30,]
   }
+  
+  # We assume that the annuity starts paying out at age 65 and that the entire reference population is dead by age 90.
+  age_length = length(pxt)
   
   wang_sse = function(lambda) {
     # Note that all other cohorts are implicitly linked to the first cohort year through LC_pxt[,1]
@@ -66,6 +66,9 @@ getLambda = function(init_est, model, premium){
   if (premium == "Var") {
     # (Expectation of the Portoflio - Expectation of the Risk) / Var Risk
     lambda =  ( total - sum(discount_factor^(6:30) * payment * diag(pxt)) ) / sum( discount_factor^(6:30) * payment  * diag(pxt) * ( discount_factor^(6:30) * payment * (1 - diag(pxt)))) 
+  }
+  if (premium == "Mad") {
+    lambda =  ( total - sum(discount_factor^(6:30) * payment * quantile(diag(pxt), probs = 0.5, na.rm = FALSE)) ) / sum( discount_factor^(6:30) * payment * mad(diag(pxt))) 
   }
   
   return(lambda)

@@ -4,7 +4,7 @@ options(scipen=999)
 library(demography)
 library(StMoMo)
 library(lifecontingencies)
-source("getLambda.R")
+library(stats)
 
 ################################################################################################################################
 ########################################################## Preparation #########################################################
@@ -75,48 +75,54 @@ k=5 # Reference age, in format of "first_age + k = target_age"
 interest_rate = 0.017
 discount_factor = exp(- interest_rate)
 
-LCWanglambda = getLambda(1, 5, "LC", "Wang")
-LCProplambda = getLambda(1.5, 5, "LC", "Proportional")
-LCStdevlambda = getLambda(1, 5, "LC", "Stdev")
-LCVarlambda = getLambda(1.5, 5, "LC", "Var")
-LCDuallambda = getLambda(1.3, 5, "LC", "Dual")
-LCGinilambda = getLambda(0.5, 5, "LC", "Gini")
-LCExponentiallambda = getLambda(1, 5, "LC", "Exponential")
+source("getLambda.R")
+# Initial estimation is required because of root-finding solution
+LCWanglambda = getLambda(1, "LC", "Wang")
+LCProplambda = getLambda(1.5, "LC", "Proportional")
+LCDuallambda = getLambda(1.3, "LC", "Dual")
+LCGinilambda = getLambda(0.5, "LC", "Gini")
+LCExponentiallambda = getLambda(1, "LC", "Exponential")
+# No initial estimation is necessary, closed form expressions for lambda are derived for real world measures
+LCStdevlambda = getLambda(0, "LC", "Stdev")
+LCVarlambda = getLambda(0, "LC", "Var")
+LCMadlambda = getLambda(0, "LC", "Mad")
 
-RHWanglambda = getLambda(1, 5, "RH", "Wang")
-RHProplambda = getLambda(1.5, 5, "RH", "Proportional")
-RHStdevlambda = getLambda(1, 5, "RH", "Stdev")
-RHVarlambda = getLambda(1.5, 5, "RH", "Var")
-RHDuallambda = getLambda(1.3, 5, "RH", "Dual")
-RHGinilambda = getLambda(0.5, 5, "RH", "Gini")
-RHExponentiallambda = getLambda(1, 5, "RH", "Exponential")
+RHWanglambda = getLambda(1, "RH", "Wang")
+RHProplambda = getLambda(1.5, "RH", "Proportional")
+RHDuallambda = getLambda(1.3, "RH", "Dual")
+RHGinilambda = getLambda(0.5, "RH", "Gini")
+RHExponentiallambda = getLambda(1, "RH", "Exponential")
+RHStdevlambda = getLambda(0, "RH", "Stdev")
+RHVarlambda = getLambda(0, "RH", "Var")
+RHMadlambda = getLambda(0, "RH", "Mad")
 
-CBDWanglambda = getLambda(1, 5, "CBD", "Wang")
-CBDProplambda = getLambda(1.5, 5, "CBD", "Proportional")
-CBDStdevlambda = getLambda(1, 5, "CBD", "Stdev")
-CBDVarlambda = getLambda(1.5, 5, "CBD", "Var")
-CBDDuallambda = getLambda(1.3, 5, "CBD", "Dual")
-CBDGinilambda = getLambda(0.5, 5, "CBD", "Gini")
-CBDExponentiallambda = getLambda(1, 5, "CBD", "Exponential")
+CBDWanglambda = getLambda(1, "CBD", "Wang")
+CBDProplambda = getLambda(1.5, "CBD", "Proportional")
+CBDDuallambda = getLambda(1.3, "CBD", "Dual")
+CBDGinilambda = getLambda(0.5, "CBD", "Gini")
+CBDExponentiallambda = getLambda(1, "CBD", "Exponential")
+CBDStdevlambda = getLambda(0, "CBD", "Stdev")
+CBDVarlambda = getLambda(0, "CBD", "Var")
+CBDMadlambda = getLambda(0, "CBD", "Mad")
 
-M6Wanglambda = getLambda(1, 5, "M6", "Wang")
-M6Proplambda = getLambda(1.5, 5, "M6", "Proportional")
-M6Stdevlambda = getLambda(1, 5, "M6", "Stdev")
-M6Varlambda = getLambda(1.5, 5, "M6", "Var")
-M6Duallambda = getLambda(1.3, 5, "M6", "Dual")
-M6Ginilambda = getLambda(0.5, 5, "M6", "Gini")
-M6Exponentiallambda = getLambda(1, 5, "M6", "Exponential")
+M6Wanglambda = getLambda(1, "M6", "Wang")
+M6Proplambda = getLambda(1.5, "M6", "Proportional")
+M6Duallambda = getLambda(1.3, "M6", "Dual")
+M6Ginilambda = getLambda(0.5, "M6", "Gini")
+M6Exponentiallambda = getLambda(1, "M6", "Exponential")
+M6Stdevlambda = getLambda(0, "M6", "Stdev")
+M6Varlambda = getLambda(0, "M6", "Var")
+M6Madlambda = getLambda(0, "M6", "Mad")
 
-lambda_table = data.frame(matrix(nrow = 7, ncol = 4, c(LCWanglambda, LCProplambda, LCStdevlambda, LCVarlambda, LCDuallambda, LCGinilambda, LCExponentiallambda,
-                                                          RHWanglambda, RHProplambda, RHStdevlambda, RHVarlambda, RHDuallambda, RHGinilambda, RHExponentiallambda,
-                                                          CBDWanglambda, CBDProplambda, CBDStdevlambda, CBDVarlambda, CBDDuallambda, CBDGinilambda, CBDExponentiallambda,
-                                                          M6Wanglambda, M6Proplambda, M6Stdevlambda, M6Varlambda, M6Duallambda, M6Ginilambda, M6Exponentiallambda)
+lambda_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWanglambda, LCProplambda, LCDuallambda, LCGinilambda, LCExponentiallambda, LCStdevlambda, LCVarlambda, LCMadlambda,
+                                                          RHWanglambda, RHProplambda, RHDuallambda, RHGinilambda, RHExponentiallambda, RHStdevlambda, RHVarlambda, RHMadlambda,
+                                                          CBDWanglambda, CBDProplambda, CBDDuallambda, CBDGinilambda, CBDExponentiallambda, CBDStdevlambda, CBDVarlambda, CBDMadlambda,
+                                                          M6Wanglambda, M6Proplambda, M6Duallambda, M6Ginilambda, M6Exponentiallambda, M6Stdevlambda, M6Varlambda, M6Madlambda)
                 ))
 
-rownames(lambda_table) = c("Wang", "Proportional", "StDev", "Var", "Dual", "Gini", "Exponential")
+rownames(lambda_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(lambda_table) = c("LC","RH","CBD","M6")
 lambda_table
-
 
 # source("SurvivorForward.R")
 # LC_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(5, years_for, notional_principal=payment, LCWanglambda, "LC", "Wang", nsim=nsim) ) )
