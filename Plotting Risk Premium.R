@@ -36,6 +36,7 @@ lines(LC_Mad_Swap_Premium, lwd = 2, col="gray", lty=2)
 legend("topleft", legend=c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad"),
        col=c("black", "blue", "red", "gold", "green", "purple", "orange", "gray"), lty=c(1,1,1,1,1,2,2,2), cex=0.8)
 
+
 # # Survivor Forward
 #  # LC
 # par(mfrow=c(1,2))

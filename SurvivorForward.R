@@ -70,7 +70,6 @@ survivorForwardPremium = function(years_for, lambda, model, premium, nsim=100){
     S_t = discount_factor^(years_for) * ( quantile(survival_rates_mat[,years_for], probs = 0.5, na.rm = FALSE) + lambda * mad( survival_rates_mat[,years_for] ) )
     K_t = discount_factor^(years_for) * quantile(survival_rates_mat[,years_for], probs = 0.5, na.rm = FALSE)
   }
-  
   risk_premium = (S_t / K_t) - 1
   return(risk_premium)
 }

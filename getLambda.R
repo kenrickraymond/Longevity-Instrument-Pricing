@@ -81,6 +81,5 @@ getLambda = function(init_est, model, premium){
   if (premium == "Mad") {
     lambda =  ( total - sum(discount_factor^(k:age_length) * payment * quantile(diag(pxt), probs = 0.5, na.rm = FALSE) ) ) / sum( discount_factor^(k:age_length) * payment * mad(diag(pxt))) 
   }
-  
   return(lambda)
 }

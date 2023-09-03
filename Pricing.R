@@ -207,4 +207,10 @@ M6.Wang.range = max(M6_Wang_Forward_Premium) - min(M6_Wang_Forward_Premium)
 M6.Wang.mean = mean(M6_Wang_Forward_Premium)
 M6.Wang.variance = var(M6_Wang_Forward_Premium)
 
-
+Wang.mortality.table = data.frame(matrix(nrow = 4, ncol = 3, c(LC.Wang.range, RH.Wang.range, CBD.Wang.range, M6.Wang.range,
+                                                           LC.Wang.mean, RH.Wang.mean, CBD.Wang.mean, M6.Wang.mean,
+                                                           LC.Wang.variance, RH.Wang.variance, CBD.Wang.variance, M6.Wang.variance)
+))
+rownames(Wang.mortality.table) = c("LC", "RH", "CBD", "M6")
+colnames(Wang.mortality.table) = c("Range", "Mean", "Var")
+round(Wang.mortality.table, digits=6)

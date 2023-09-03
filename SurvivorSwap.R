@@ -88,7 +88,6 @@ survivorSwapPremium = function(years_for, lambda, model, premium, nsim=100){
       K_t = sum(discount_factor^(1:years_for) * quantile( colMeans(survival_rates_mat), probs = 0.5, na.rm = FALSE) )  
     }
   }
-  
   risk_premium = (S_t / K_t) - 1
   return(risk_premium)
 }
