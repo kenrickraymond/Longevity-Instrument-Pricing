@@ -39,7 +39,7 @@ survivorSwapPremium = function(years_for, lambda, model, premium, nsim=100){
   }
   
   if (premium == "Wang") {
-    S_t = sum( discount_factor^(1:years_for) * ( 1 - pnorm( qnorm( 1 - colMeans(survival_rates_mat)) - LCWanglambda) ) )
+    S_t = sum( discount_factor^(1:years_for) * ( 1 - pnorm( qnorm( 1 - colMeans(survival_rates_mat)) - lambda) ) )
     K_t = sum( discount_factor^(1:years_for) * ( 1 - pnorm( qnorm( 1 - colMeans(survival_rates_mat)) - 0) ) )
   }
   if (premium == "Proportional") {
