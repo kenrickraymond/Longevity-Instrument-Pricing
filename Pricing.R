@@ -31,7 +31,6 @@ M6 = m6(link="logit")
 
 # Fit Mortality Models
 LCfit = fit(LC, data=EWMaleData, ages.fit=ages.fit, years.fit=years.fit, wxt = wxt)
-### !!! There is an issue with negative mortality rates when fitting the RH model
 RHfit = fit(RH, data=EWMaleData, ages.fit=ages.fit, years.fit=years.fit, wxt = wxt)
 CBDfit = fit(CBD, data = EWMaleIniData, ages.fit = ages.fit, years.fit=years.fit, wxt = wxt)
 M6fit = fit(M6, data = EWMaleIniData, ages.fit = ages.fit, years.fit=years.fit, wxt = wxt)
@@ -131,8 +130,31 @@ LC_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) sur
 LC_Mad_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, LCMadlambda, "LC", "Mad", nsim=nsim) ) )
 
 RH_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, RHWanglambda, "RH", "Wang", nsim=nsim) ) )
+RH_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, RHProplambda, "RH", "Proportional", nsim=nsim) ) )
+RH_Dual_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, RHDuallambda, "RH", "Dual", nsim=nsim) ) )
+RH_Gini_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, RHGinilambda, "RH", "Gini", nsim=nsim) ) )
+RH_Exponential_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, RHExponentiallambda, "RH", "Exponential", nsim=nsim) ) )
+RH_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, RHStdevlambda, "RH", "Stdev", nsim=nsim) ) )
+RH_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, RHVarlambda, "RH", "Var", nsim=nsim) ) )
+RH_Mad_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, RHMadlambda, "RH", "Mad", nsim=nsim) ) )
+
 CBD_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, CBDWanglambda, "CBD", "Wang", nsim=nsim) ) )
+CBD_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, CBDProplambda, "CBD", "Proportional", nsim=nsim) ) )
+CBD_Dual_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, CBDDuallambda, "CBD", "Dual", nsim=nsim) ) )
+CBD_Gini_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, CBDGinilambda, "CBD", "Gini", nsim=nsim) ) )
+CBD_Exponential_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, CBDExponentiallambda, "CBD", "Exponential", nsim=nsim) ) )
+CBD_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, CBDStdevlambda, "CBD", "Stdev", nsim=nsim) ) )
+CBD_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, CBDVarlambda, "CBD", "Var", nsim=nsim) ) )
+CBD_Mad_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, CBDMadlambda, "CBD", "Mad", nsim=nsim) ) )
+
 M6_Wang_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, M6Wanglambda, "M6", "Wang", nsim=nsim) ) )
+M6_Prop_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, M6Proplambda, "M6", "Proportional", nsim=nsim) ) )
+M6_Dual_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, M6Duallambda, "M6", "Dual", nsim=nsim) ) )
+M6_Gini_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, M6Ginilambda, "M6", "Gini", nsim=nsim) ) )
+M6_Exponential_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, M6Exponentiallambda, "M6", "Exponential", nsim=nsim) ) )
+M6_Std_Forward_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, M6Stdevlambda, "M6", "Stdev", nsim=nsim) ) )
+M6_Var_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, M6Varlambda, "M6", "Var", nsim=nsim) ) )
+M6_Mad_Forward_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorForwardPremium(years_for, M6Madlambda, "M6", "Mad", nsim=nsim) ) )
 
 
 source("SurvivorSwap.R")
@@ -144,6 +166,34 @@ LC_Exponential_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for
 LC_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCStdevlambda, "LC", "Stdev", nsim=nsim) ) )
 LC_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCVarlambda, "LC", "Var", nsim=nsim) ) )
 LC_Mad_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, LCMadlambda, "LC", "Mad", nsim=nsim) ) )
+
+RH_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, RHWanglambda, "RH", "Wang", nsim=nsim) ) )
+RH_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, RHProplambda, "RH", "Proportional", nsim=nsim) ) )
+RH_Dual_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, RHDuallambda, "RH", "Dual", nsim=nsim) ) )
+RH_Gini_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, RHGinilambda, "RH", "Gini", nsim=nsim) ) )
+RH_Exponential_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, RHExponentiallambda, "RH", "Exponential", nsim=nsim) ) )
+RH_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, RHStdevlambda, "RH", "Stdev", nsim=nsim) ) )
+RH_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, RHVarlambda, "RH", "Var", nsim=nsim) ) )
+RH_Mad_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, RHMadlambda, "RH", "Mad", nsim=nsim) ) )
+
+CBD_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, CBDWanglambda, "CBD", "Wang", nsim=nsim) ) )
+CBD_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, CBDProplambda, "CBD", "Proportional", nsim=nsim) ) )
+CBD_Dual_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, CBDDuallambda, "CBD", "Dual", nsim=nsim) ) )
+CBD_Gini_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, CBDGinilambda, "CBD", "Gini", nsim=nsim) ) )
+CBD_Exponential_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, CBDExponentiallambda, "CBD", "Exponential", nsim=nsim) ) )
+CBD_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, CBDStdevlambda, "CBD", "Stdev", nsim=nsim) ) )
+CBD_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, CBDVarlambda, "CBD", "Var", nsim=nsim) ) )
+CBD_Mad_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, CBDMadlambda, "CBD", "Mad", nsim=nsim) ) )
+
+M6_Wang_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Wanglambda, "M6", "Wang", nsim=nsim) ) )
+M6_Prop_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Proplambda, "M6", "Proportional", nsim=nsim) ) )
+M6_Dual_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Duallambda, "M6", "Dual", nsim=nsim) ) )
+M6_Gini_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Ginilambda, "M6", "Gini", nsim=nsim) ) )
+M6_Exponential_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Exponentiallambda, "M6", "Exponential", nsim=nsim) ) )
+M6_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Stdevlambda, "M6", "Stdev", nsim=nsim) ) )
+M6_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Varlambda, "M6", "Var", nsim=nsim) ) )
+M6_Mad_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Madlambda, "M6", "Mad", nsim=nsim) ) )
+
 
 # Measures of Central Tendency
 # Fix a mortality model

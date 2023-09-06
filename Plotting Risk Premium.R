@@ -37,6 +37,45 @@ legend("topleft", legend=c("Wang", "Proportional", "Dual", "Gini", "Exponential"
        col=c("black", "blue", "red", "gold", "green", "purple", "orange", "gray"), lty=c(1,1,1,1,1,2,2,2), cex=0.8)
 
 
+plot(RH_Wang_Forward_Premium,
+     ylim = c( min(c(RH_Wang_Forward_Premium, RH_Prop_Forward_Premium, RH_Dual_Forward_Premium, RH_Gini_Forward_Premium, RH_Exponential_Forward_Premium, RH_Std_Forward_Premium, RH_Var_Forward_Premium, RH_Mad_Forward_Premium)),
+               max(c(RH_Wang_Forward_Premium, RH_Prop_Forward_Premium, RH_Dual_Forward_Premium, RH_Gini_Forward_Premium, RH_Exponential_Forward_Premium, RH_Std_Forward_Premium, RH_Var_Forward_Premium, RH_Mad_Forward_Premium))),
+     lwd=2,
+     type="l",
+     xlim = c(1,years_for),
+     main = "RH model",
+     ylab="Risk Premium in Decimal Basis",
+     xlab = "Years to Maturity of Survivor Forward")
+lines(RH_Prop_Forward_Premium, lwd = 2, col="blue")
+lines(RH_Dual_Forward_Premium, lwd = 2, col="red")
+lines(RH_Gini_Forward_Premium, lwd = 2, col="gold")
+lines(RH_Exponential_Forward_Premium, lwd = 2, col="green")
+lines(RH_Std_Forward_Premium, lwd = 2, col="purple", lty=2)
+lines(RH_Var_Forward_Premium, lwd = 2, col="orange", lty=2)
+lines(RH_Mad_Forward_Premium, lwd = 2, col="gray", lty=2)
+legend("topleft", legend=c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad"),
+       col=c("black", "blue", "red", "gold", "green", "purple", "orange", "gray"), lty=c(1,1,1,1,1,2,2,2), cex=0.8)
+
+plot(RH_Wang_Swap_Premium,
+     ylim = c( min(c(RH_Wang_Swap_Premium, RH_Prop_Swap_Premium, RH_Dual_Swap_Premium, RH_Gini_Swap_Premium, RH_Exponential_Swap_Premium, RH_Std_Swap_Premium, RH_Var_Swap_Premium, RH_Mad_Swap_Premium)),
+               max(c(RH_Wang_Swap_Premium, RH_Prop_Swap_Premium, RH_Dual_Swap_Premium, RH_Gini_Swap_Premium, RH_Exponential_Swap_Premium, RH_Std_Swap_Premium, RH_Var_Swap_Premium, RH_Mad_Swap_Premium))),
+     lwd=2,
+     type="l",
+     xlim = c(1,years_for),
+     main= "RH model",
+     ylab="Risk Premium in Decimal Basis",
+     xlab = "Years to Maturity of Survivor Swap")
+lines(RH_Prop_Swap_Premium, lwd = 2, col="blue")
+lines(RH_Dual_Swap_Premium, lwd = 2, col="red")
+lines(RH_Gini_Swap_Premium, lwd = 2, col="gold")
+lines(RH_Exponential_Swap_Premium, lwd = 2, col="green")
+lines(RH_Std_Swap_Premium, lwd = 2, col="purple", lty=2)
+lines(RH_Var_Swap_Premium, lwd = 2, col="orange", lty=2)
+lines(RH_Mad_Swap_Premium, lwd = 2, col="gray", lty=2)
+legend("topleft", legend=c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad"),
+       col=c("black", "blue", "red", "gold", "green", "purple", "orange", "gray"), lty=c(1,1,1,1,1,2,2,2), cex=0.8)
+
+
 # # Survivor Forward
 #  # LC
 # par(mfrow=c(1,2))
