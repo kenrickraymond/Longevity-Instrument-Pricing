@@ -56,8 +56,8 @@ goodness_of_fit_table
 # plot(M6fit)
 
 # Parameters for forecasting and simulations
-years_for = 25 # Generate h-year ahead forecasts
-nsim = 100 # Number of simulations when simulating future mortality scenarios
+years_for = 20 # Generate h-year ahead forecasts
+nsim = 1000 # Number of simulations when simulating future mortality scenarios
 
 ################################################################################################################################
 #################################################### Pricing Parameter #########################################################
@@ -65,9 +65,9 @@ nsim = 100 # Number of simulations when simulating future mortality scenarios
 
 # Parameters for obtaining the pricing parameter
 # We obtain the pricing parameter using annuity rates for the reference population since market prices for longevity-linked instruments are not publically available
-payment = 5700 # 2012 Rates for UK Population
+payment = 6000 # 2012 Rates for UK Population
 total = 100000
-interest_rate = 0.017 # Based on the 15-year Gilt rate
+interest_rate = 0.0204 # Based on the 15-year Gilt rate
 discount_factor = exp(- interest_rate)
 
 source("getLambda.R")
@@ -193,74 +193,3 @@ M6_Exponential_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for
 M6_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Stdevlambda, "M6", "Stdev", nsim=nsim) ) )
 M6_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Varlambda, "M6", "Var", nsim=nsim) ) )
 M6_Mad_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Madlambda, "M6", "Mad", nsim=nsim) ) )
-
-
-# Measures of Central Tendency
-# Fix a mortality model
-LC.Wang.range = max(LC_Wang_Forward_Premium) - min(LC_Wang_Forward_Premium)
-LC.Wang.mean = mean(LC_Wang_Forward_Premium)
-LC.Wang.variance = var(LC_Wang_Forward_Premium)
-
-LC.Prop.range = max(LC_Prop_Forward_Premium) - min(LC_Prop_Forward_Premium)
-LC.Prop.mean = mean(LC_Prop_Forward_Premium)
-LC.Prop.variance = var(LC_Prop_Forward_Premium)
-
-LC.Dual.range = max(LC_Dual_Forward_Premium) - min(LC_Dual_Forward_Premium)
-LC.Dual.mean = mean(LC_Dual_Forward_Premium)
-LC.Dual.variance = var(LC_Dual_Forward_Premium)
-
-LC.Gini.range = max(LC_Gini_Forward_Premium) - min(LC_Gini_Forward_Premium)
-LC.Gini.mean = mean(LC_Gini_Forward_Premium)
-LC.Gini.variance = var(LC_Gini_Forward_Premium)
-
-LC.Exponential.range = max(LC_Exponential_Forward_Premium) - min(LC_Exponential_Forward_Premium)
-LC.Exponential.mean = mean(LC_Exponential_Forward_Premium)
-LC.Exponential.variance = var(LC_Exponential_Forward_Premium)
-
-LC.Std.range = max(LC_Std_Forward_Premium) - min(LC_Std_Forward_Premium)
-LC.Std.mean = mean(LC_Std_Forward_Premium)
-LC.Std.variance = var(LC_Std_Forward_Premium)
-
-LC.Var.range = max(LC_Var_Forward_Premium) - min(LC_Var_Forward_Premium)
-LC.Var.mean = mean(LC_Var_Forward_Premium)
-LC.Var.variance = var(LC_Var_Forward_Premium)
-
-LC.Mad.range = max(LC_Mad_Forward_Premium) - min(LC_Mad_Forward_Premium)
-LC.Mad.mean = mean(LC_Mad_Forward_Premium)
-LC.Mad.variance = var(LC_Mad_Forward_Premium)
-
-
-LC.premium.table = data.frame(matrix(nrow = 8, ncol = 3, c(LC.Wang.range, LC.Prop.range, LC.Dual.range, LC.Gini.range, LC.Exponential.range, LC.Std.range, LC.Var.range, LC.Mad.range,
-                                                           LC.Wang.mean, LC.Prop.mean, LC.Dual.mean, LC.Gini.mean, LC.Exponential.mean, LC.Std.mean, LC.Var.mean, LC.Mad.mean,
-                                                           LC.Wang.variance, LC.Prop.variance, LC.Dual.variance, LC.Gini.variance, LC.Exponential.variance, LC.Std.variance, LC.Var.variance, LC.Mad.variance)
-))
-rownames(LC.premium.table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
-colnames(LC.premium.table) = c("Range", "Mean", "Var")
-round(LC.premium.table, digits=6)
-
-
-# Fix a premium principle
-# Redundant
-LC.Wang.range = max(LC_Wang_Forward_Premium) - min(LC_Wang_Forward_Premium)
-LC.Wang.mean = mean(LC_Wang_Forward_Premium)
-LC.Wang.variance = var(LC_Wang_Forward_Premium)
-
-RH.Wang.range = max(RH_Wang_Forward_Premium) - min(RH_Wang_Forward_Premium)
-RH.Wang.mean = mean(RH_Wang_Forward_Premium)
-RH.Wang.variance = var(RH_Wang_Forward_Premium)
-
-CBD.Wang.range = max(CBD_Wang_Forward_Premium) - min(CBD_Wang_Forward_Premium)
-CBD.Wang.mean = mean(CBD_Wang_Forward_Premium)
-CBD.Wang.variance = var(CBD_Wang_Forward_Premium)
-
-M6.Wang.range = max(M6_Wang_Forward_Premium) - min(M6_Wang_Forward_Premium)
-M6.Wang.mean = mean(M6_Wang_Forward_Premium)
-M6.Wang.variance = var(M6_Wang_Forward_Premium)
-
-Wang.mortality.table = data.frame(matrix(nrow = 4, ncol = 3, c(LC.Wang.range, RH.Wang.range, CBD.Wang.range, M6.Wang.range,
-                                                           LC.Wang.mean, RH.Wang.mean, CBD.Wang.mean, M6.Wang.mean,
-                                                           LC.Wang.variance, RH.Wang.variance, CBD.Wang.variance, M6.Wang.variance)
-))
-rownames(Wang.mortality.table) = c("LC", "RH", "CBD", "M6")
-colnames(Wang.mortality.table) = c("Range", "Mean", "Var")
-round(Wang.mortality.table, digits=6)
