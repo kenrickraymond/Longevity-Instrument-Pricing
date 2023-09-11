@@ -21,19 +21,20 @@ getLambda = function(init_est, model, premium){
   age_length = length(ages.fit)
   
   if (model == "LC"){
-    qxt = LCfit$Dxt / LCfit$Ext 
+    # Model implied fitted rates
+    qxt = fitted(LCfit, type = "rates")
     pxt = 1 - qxt[k:age_length,] # We assume that the annuity starts paying out at age 65 and that the entire reference population is dead by age 90.
   }
   if (model == "RH"){
-    qxt = RHfit$Dxt / RHfit$Ext
+    qxt = fitted(RHfit, type = "rates")
     pxt = 1 - qxt[k:age_length,]
   }
   if (model == "CBD"){
-    qxt = CBDfit$Dxt / CBDfit$Ext
+    qxt = fitted(CBDfit, type = "rates")
     pxt = 1 - qxt[k:age_length,]
   }
   if (model == "M6"){
-    qxt = M6fit$Dxt / M6fit$Ext
+    qxt = fitted(M6fit, type = "rates")
     pxt = 1 - qxt[k:age_length,]
   }
   

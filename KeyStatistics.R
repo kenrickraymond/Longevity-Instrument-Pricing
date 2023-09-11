@@ -1,4 +1,5 @@
 # Measures of Central Tendency
+options(digits=4, scipen=1)
 LC.Wang.range = max(LC_Wang_Forward_Premium) - min(LC_Wang_Forward_Premium)
 LC.Wang.mean = mean(LC_Wang_Forward_Premium)
 LC.Wang.variance = var(LC_Wang_Forward_Premium)
@@ -38,7 +39,7 @@ LC.premium.table = data.frame(matrix(nrow = 8, ncol = 3, c(LC.Wang.range, LC.Pro
 ))
 rownames(LC.premium.table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(LC.premium.table) = c("Range", "Mean", "Var")
-round(LC.premium.table, digits=6)
+round(LC.premium.table, digits=22)
 
 RH.Wang.range = max(RH_Wang_Forward_Premium) - min(RH_Wang_Forward_Premium)
 RH.Wang.mean = mean(RH_Wang_Forward_Premium)
@@ -79,7 +80,7 @@ RH.premium.table = data.frame(matrix(nrow = 8, ncol = 3, c(RH.Wang.range, RH.Pro
 ))
 rownames(RH.premium.table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(RH.premium.table) = c("Range", "Mean", "Var")
-round(RH.premium.table, digits=6)
+round(RH.premium.table, digits=22)
 
 CBD.Wang.range = max(CBD_Wang_Forward_Premium) - min(CBD_Wang_Forward_Premium)
 CBD.Wang.mean = mean(CBD_Wang_Forward_Premium)
@@ -120,7 +121,7 @@ CBD.premium.table = data.frame(matrix(nrow = 8, ncol = 3, c(CBD.Wang.range, CBD.
 ))
 rownames(CBD.premium.table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(CBD.premium.table) = c("Range", "Mean", "Var")
-round(CBD.premium.table, digits=6)
+round(CBD.premium.table, digits=4)
 
 M6.Wang.range = max(M6_Wang_Forward_Premium) - min(M6_Wang_Forward_Premium)
 M6.Wang.mean = mean(M6_Wang_Forward_Premium)
@@ -161,4 +162,4 @@ M6.premium.table = data.frame(matrix(nrow = 8, ncol = 3, c(M6.Wang.range, M6.Pro
 ))
 rownames(M6.premium.table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(M6.premium.table) = c("Range", "Mean", "Var")
-round(M6.premium.table, digits=6)
+round(M6.premium.table, digits=4)
