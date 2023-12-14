@@ -55,6 +55,17 @@ goodness_of_fit_table
 # plot(CBDfit)
 # plot(M6fit)
 
+# Residual analysis
+LCres <- residuals(LCfit)
+RHres <- residuals(RHfit)
+CBDres <- residuals(CBDfit)
+M6res <- residuals(M6fit)
+
+plot(LCres, type = "colourmap", reslim = c(-3.5, 3.5), main="LC")
+plot(RHres, type = "colourmap", reslim = c(-3.5, 3.5), main="RH")
+plot(CBDres, type = "colourmap", reslim = c(-3.5, 3.5), main="CBD")
+plot(M6res, type = "colourmap", reslim = c(-3.5, 3.5), main="M6")
+
 # Parameters for forecasting and simulations
 years_for = 20 # Generate h-year ahead forecasts
 nsim = 1000 # Number of simulations when simulating future mortality scenarios
@@ -193,3 +204,22 @@ M6_Exponential_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for
 M6_Std_Swap_Premium = as.numeric(lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Stdevlambda, "M6", "Stdev", nsim=nsim) ) )
 M6_Var_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Varlambda, "M6", "Var", nsim=nsim) ) )
 M6_Mad_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) survivorSwapPremium(years_for, M6Madlambda, "M6", "Mad", nsim=nsim) ) )
+
+
+source("Robustness.R")
+forward_years=15
+maturity_length=10
+LCWangCDF = forwardCDF(forward_years,maturity_length, LCWanglambda, "LC", "Wang", LC_Wang_Forward_Premium[forward_years], nsim=1000)
+RHWangCDF = forwardCDF(forward_years,maturity_length, RHWanglambda, "RH", "Wang", RH_Wang_Forward_Premium[forward_years], nsim=1000)
+CBDWangCDF = forwardCDF(forward_years,maturity_length, CBDWanglambda, "CBD", "Wang", CBD_Wang_Forward_Premium[forward_years], nsim=1000)
+M6WangCDF = forwardCDF(forward_years,maturity_length, M6Wanglambda, "M6", "Wang", M6_Wang_Forward_Premium[forward_years], nsim=1000)
+
+hist(LCWangCDF)
+hist(RHWangCDF)
+hist(CBDWangCDF)
+hist(M6WangCDF)
+
+quantile(LCWangCDF, probs=0.05)
+quantile(RHWangCDF, probs=0.05)
+quantile(CBDWangCDF, probs=0.05)
+quantile(M6WangCDF, probs=0.05)
