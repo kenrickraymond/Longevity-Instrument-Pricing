@@ -209,17 +209,98 @@ M6_Mad_Swap_Premium = as.numeric( lapply(1:years_for, function(years_for) surviv
 source("Robustness.R")
 forward_years=15
 maturity_length=10
+
 LCWangCDF = forwardCDF(forward_years,maturity_length, LCWanglambda, "LC", "Wang", LC_Wang_Forward_Premium[forward_years], nsim=1000)
 RHWangCDF = forwardCDF(forward_years,maturity_length, RHWanglambda, "RH", "Wang", RH_Wang_Forward_Premium[forward_years], nsim=1000)
 CBDWangCDF = forwardCDF(forward_years,maturity_length, CBDWanglambda, "CBD", "Wang", CBD_Wang_Forward_Premium[forward_years], nsim=1000)
 M6WangCDF = forwardCDF(forward_years,maturity_length, M6Wanglambda, "M6", "Wang", M6_Wang_Forward_Premium[forward_years], nsim=1000)
+
+LCPropCDF = forwardCDF(forward_years,maturity_length, LCProplambda, "LC", "Proportional", LC_Prop_Forward_Premium[forward_years], nsim=1000)
+RHPropCDF = forwardCDF(forward_years,maturity_length, RHProplambda, "RH", "Proportional", RH_Prop_Forward_Premium[forward_years], nsim=1000)
+CBDPropCDF = forwardCDF(forward_years,maturity_length, CBDProplambda, "CBD", "Proportional", CBD_Prop_Forward_Premium[forward_years], nsim=1000)
+M6PropCDF = forwardCDF(forward_years,maturity_length, M6Proplambda, "M6", "Proportional", M6_Prop_Forward_Premium[forward_years], nsim=1000)
+
+LCDualCDF = forwardCDF(forward_years,maturity_length, LCDuallambda, "LC", "Dual", LC_Dual_Forward_Premium[forward_years], nsim=1000)
+RHDualCDF = forwardCDF(forward_years,maturity_length, RHDuallambda, "RH", "Dual", RH_Dual_Forward_Premium[forward_years], nsim=1000)
+CBDDualCDF = forwardCDF(forward_years,maturity_length, CBDDuallambda, "CBD", "Dual", CBD_Dual_Forward_Premium[forward_years], nsim=1000)
+M6DualCDF = forwardCDF(forward_years,maturity_length, M6Duallambda, "M6", "Dual", M6_Dual_Forward_Premium[forward_years], nsim=1000)
+
+LCGiniCDF = forwardCDF(forward_years,maturity_length, LCGinilambda, "LC", "Gini", LC_Gini_Forward_Premium[forward_years], nsim=1000)
+RHGiniCDF = forwardCDF(forward_years,maturity_length, RHGinilambda, "RH", "Gini", RH_Gini_Forward_Premium[forward_years], nsim=1000)
+CBDGiniCDF = forwardCDF(forward_years,maturity_length, CBDGinilambda, "CBD", "Gini", CBD_Gini_Forward_Premium[forward_years], nsim=1000)
+M6GiniCDF = forwardCDF(forward_years,maturity_length, M6Ginilambda, "M6", "Gini", M6_Gini_Forward_Premium[forward_years], nsim=1000)
+
+LCExponentialCDF = forwardCDF(forward_years,maturity_length, LCExponentiallambda, "LC", "Exponential", LC_Exponential_Forward_Premium[forward_years], nsim=1000)
+RHExponentialCDF = forwardCDF(forward_years,maturity_length, RHExponentiallambda, "RH", "Exponential", RH_Exponential_Forward_Premium[forward_years], nsim=1000)
+CBDExponentialCDF = forwardCDF(forward_years,maturity_length, CBDExponentiallambda, "CBD", "Exponential", CBD_Exponential_Forward_Premium[forward_years], nsim=1000)
+M6ExponentialCDF = forwardCDF(forward_years,maturity_length, M6Exponentiallambda, "M6", "Exponential", M6_Exponential_Forward_Premium[forward_years], nsim=1000)
+
+LCStDevCDF = forwardCDF(forward_years,maturity_length, LCStDevlambda, "LC", "StDev", LC_Std_Forward_Premium[forward_years], nsim=1000)
+RHStDevCDF = forwardCDF(forward_years,maturity_length, RHStDevlambda, "RH", "StDev", RH_Std_Forward_Premium[forward_years], nsim=1000)
+CBDStDevCDF = forwardCDF(forward_years,maturity_length, CBDStDevlambda, "CBD", "StDev", CBD_Std_Forward_Premium[forward_years], nsim=1000)
+M6StDevCDF = forwardCDF(forward_years,maturity_length, M6StDevlambda, "M6", "StDev", M6_Std_Forward_Premium[forward_years], nsim=1000)
+
+LCVarCDF = forwardCDF(forward_years,maturity_length, LCVarlambda, "LC", "Var", LC_Var_Forward_Premium[forward_years], nsim=1000)
+RHVarCDF = forwardCDF(forward_years,maturity_length, RHVarlambda, "RH", "Var", RH_Var_Forward_Premium[forward_years], nsim=1000)
+CBDVarCDF = forwardCDF(forward_years,maturity_length, CBDVarlambda, "CBD", "Var", CBD_Var_Forward_Premium[forward_years], nsim=1000)
+M6VarCDF = forwardCDF(forward_years,maturity_length, M6Varlambda, "M6", "Var", M6_Var_Forward_Premium[forward_years], nsim=1000)
+
+LCMadCDF = forwardCDF(forward_years,maturity_length, LCMadlambda, "LC", "Mad", LC_Mad_Forward_Premium[forward_years], nsim=1000)
+RHMadCDF = forwardCDF(forward_years,maturity_length, RHMadlambda, "RH", "Mad", RH_Mad_Forward_Premium[forward_years], nsim=1000)
+CBDMadCDF = forwardCDF(forward_years,maturity_length, CBDMadlambda, "CBD", "Mad", CBD_Mad_Forward_Premium[forward_years], nsim=1000)
+M6MadCDF = forwardCDF(forward_years,maturity_length, M6Madlambda, "M6", "Mad", M6_Mad_Forward_Premium[forward_years], nsim=1000)
 
 hist(LCWangCDF)
 hist(RHWangCDF)
 hist(CBDWangCDF)
 hist(M6WangCDF)
 
-quantile(LCWangCDF, probs=0.05)
-quantile(RHWangCDF, probs=0.05)
-quantile(CBDWangCDF, probs=0.05)
-quantile(M6WangCDF, probs=0.05)
+alpha = 0.05
+LCWangVaR = quantile(LCWangCDF, probs=alpha)
+RHWangVaR = quantile(RHWangCDF, probs=alpha)
+CBDWangVaR = quantile(CBDWangCDF, probs=alpha)
+M6WangVaR = quantile(M6WangCDF, probs=alpha)
+
+LCPropVaR = quantile(LCPropCDF, probs=alpha)
+RHPropVaR = quantile(RHPropCDF, probs=alpha)
+CBDPropVaR = quantile(CBDPropCDF, probs=alpha)
+M6PropVaR = quantile(M6PropCDF, probs=alpha)
+
+LCDualVaR = quantile(LCDualCDF, probs=alpha)
+RHDualVaR = quantile(RHDualCDF, probs=alpha)
+CBDDualVaR = quantile(CBDDualCDF, probs=alpha)
+M6DualVaR = quantile(M6DualCDF, probs=alpha)
+
+LCGiniVaR = quantile(LCGiniCDF, probs=alpha)
+RHGiniVaR = quantile(RHGiniCDF, probs=alpha)
+CBDGiniVaR = quantile(CBDGiniCDF, probs=alpha)
+M6GiniVaR = quantile(M6GiniCDF, probs=alpha)
+
+LCExponentialVaR = quantile(LCExponentialCDF, probs=alpha)
+RHExponentialVaR = quantile(RHExponentialCDF, probs=alpha)
+CBDExponentialVaR = quantile(CBDExponentialCDF, probs=alpha)
+M6ExponentialVaR = quantile(M6ExponentialCDF, probs=alpha)
+
+LCStDevVaR = quantile(LCStDevCDF, probs=alpha)
+RHStDevVaR = quantile(RHStDevCDF, probs=alpha)
+CBDStDevVaR = quantile(CBDStDevCDF, probs=alpha)
+M6StDevVaR = quantile(M6StDevCDF, probs=alpha)
+
+LCVarVaR = quantile(LCVarCDF, probs=alpha)
+RHVarVaR = quantile(RHVarCDF, probs=alpha)
+CBDVarVaR = quantile(CBDVarCDF, probs=alpha)
+M6VarVaR = quantile(M6VarCDF, probs=alpha)
+
+LCMadVaR = quantile(LCMadCDF, probs=alpha)
+RHMadVaR = quantile(RHMadCDF, probs=alpha)
+CBDMadVaR = quantile(CBDMadCDF, probs=alpha)
+M6MadVaR = quantile(M6MadCDF, probs=alpha)
+
+VaR_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangVaR, LCPropVaR, LCDualVaR, LCGiniVaR, LCExponentialVaR, LCStDevVaR, LCVarVaR, LCMadVaR,
+                                                       RHWangVaR, RHPropVaR, RHDualVaR, RHGiniVaR, RHExponentialVaR, RHStDevVaR, RHVarVaR, RHMadVaR,
+                                                       CBDWangVaR, CBDPropVaR, CBDDualVaR, CBDGiniVaR, CBDExponentialVaR, CBDStDevVaR, CBDVarVaR, CBDMadVaR,
+                                                       M6WangVaR, M6PropVaR, M6DualVaR, M6GiniVaR, M6ExponentialVaR, M6StDevVaR, M6VarVaR, M6MadVaR)
+))
+rownames(lambda_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
+colnames(lambda_table) = c("LC","RH","CBD","M6")
+lambda_table
