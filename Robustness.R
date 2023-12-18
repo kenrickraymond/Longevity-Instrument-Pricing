@@ -55,7 +55,7 @@ ForwardCDF = function(forward_years, maturity_length, lambda, model, premium, pi
   }
   if (premium == "Mad") {
     S_t = discount_factor^(maturity_length) * ( (survival_rates_mat[,horizon] ) + lambda * mad( survival_rates_mat[,horizon] ) ) # Recheck this
-    K_t = discount_factor^(maturity_length) * quantile(survival_rates_mat[,horizon], probs = 0.5, na.rm = FALSE)
+    K_t = discount_factor^(maturity_length) * mean(survival_rates_mat[,horizon])
   }
   
   contract_value = S_t - (1+pi) * K_t
@@ -122,7 +122,7 @@ SwapCDF = function(forward_years, maturity_length, lambda, model, premium, pi, n
   }
   if (premium == "Mad") {
     S_t = discount_factor^(1:maturity_length) * ( (rowSums(survival_rates_mat[,(forward_years+1):horizon]) ) + lambda * mad( rowSums(survival_rates_mat[,(forward_years+1):horizon]) ) ) # Recheck this
-    K_t = discount_factor^(1:maturity_length) * quantile(rowSums(survival_rates_mat[,(forward_years+1):horizon]), probs = 0.5, na.rm = FALSE)
+    K_t = discount_factor^(1:maturity_length) * rowSums(survival_rates_mat[,(forward_years+1):horizon])
   }
   
   contract_value = S_t - (1+pi) * K_t
