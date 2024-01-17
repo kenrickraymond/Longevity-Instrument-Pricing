@@ -121,7 +121,7 @@ CBD.premium.table = data.frame(matrix(nrow = 8, ncol = 3, c(CBD.Wang.range, CBD.
 ))
 rownames(CBD.premium.table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(CBD.premium.table) = c("Range", "Mean", "Var")
-round(CBD.premium.table, digits=4)
+round(CBD.premium.table, digits=5)
 
 M6.Wang.range = max(M6_Wang_Forward_Premium) - min(M6_Wang_Forward_Premium)
 M6.Wang.mean = mean(M6_Wang_Forward_Premium)
@@ -162,7 +162,7 @@ M6.premium.table = data.frame(matrix(nrow = 8, ncol = 3, c(M6.Wang.range, M6.Pro
 ))
 rownames(M6.premium.table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(M6.premium.table) = c("Range", "Mean", "Var")
-round(M6.premium.table, digits=4)
+round(M6.premium.table, digits=5)
 
 # For survivor swap:
 options(digits=4, scipen=1)
