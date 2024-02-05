@@ -1,8 +1,8 @@
-This repository builds upon the [StMoMo package](https://github.com/amvillegas/StMoMo) to price:
-* Survival Forwards (s-forwards)
-* Longevity Swaps
+This repository contains the resources relevant to my thesis. It builds upon the [StMoMo package](https://github.com/amvillegas/StMoMo), using a simulation-based approach to price derivatives indexed on the number of survivors from a reference population. Specifically, it prices:
+* Survival forwards (s-forwards)
+* Survivor swaps
 
-Using four pricing premium principles:
+Using eight pricing premium principles:
 * Wang Transform
 * Proportional Hazard Transform
 * Dual Power Transform
@@ -11,3 +11,7 @@ Using four pricing premium principles:
 * Standard Deviation Principle
 * Variance Principles
 * Mean Absolute Deviation (MAD) Principle
+
+Additionally, the thesis analyzes the impact of the choice of mortality model and premium principle to the risk-measures associated with the derivatives a Monte-Carlo approach. Specifically, the risk-measures considered include:
+* Value-at-risk (VaR)
+* Expected shortfall (cVaR)
