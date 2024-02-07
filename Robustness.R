@@ -1,33 +1,4 @@
-############# UNIT TESTING
-# nsim=3000
-mod_sim = simulate(LCfit, nsim = nsim, h = 10)
-survival_probability = (1-mod_sim$rates) # AGE, Years_FOR, SIM
-
-S_t = ( ( survival_probability[x, maturity, ] ) + LC_Std_Forward_Premium * sd( survival_probability[x, maturity, ] ) )
-K_t = mean( survival_probability[x, maturity, ] )
-hist(S_t - (1+LC_Std_Forward_Premium[forward_years])*K_t)
-
-# s70 = survival_probability[5,10,] # THIS IS A FORWARD CONTRACT
-# 
-# S_t = ( s70^(1/lambda) )
-# K_t =  mean( s70 )
-# max(S_t - (1+LC_Prop_Forward_Premium)*K_t)
-# 
-# # SWAP SECTION
-survival_df = matrix(nrow=3000,ncol=5)
-for (i in 1:5){
-  survival_df[,i] = survival_probability[i+4,1,]
-}
-
-S_t = ( ( rowSums(survival_df) ) + LCStdevlambda * sd( rowSums(survival_df) ) )
-K_t = ( rowSums(survival_df) )
-
-hist(S_t - (1+LC_Std_Swap_Premium[forward_years])* K_t)
-
-
-
-###############
-forwardCDF = function(maturity, x, lambda, model, premium, pi, nsim=100){
+forwardCDF = function(maturity, x, lambda, model, premium, pi, nsim=1000){
   model = toString(model)
   premium = toString(premium)
   
@@ -83,7 +54,7 @@ forwardCDF = function(maturity, x, lambda, model, premium, pi, nsim=100){
   return(contract_value)
 }
 
-# TO CHECK
+# Control = 5 for 5-year VaR and control = 9 for 1-year VaR
 SwapCDF = function(forward_years, x, control, lambda, model, premium, pi, nsim=100){
   model = toString(model)
   premium = toString(premium)
@@ -103,9 +74,9 @@ SwapCDF = function(forward_years, x, control, lambda, model, premium, pi, nsim=1
     mod_sim = simulate(M6fit, nsim = nsim, h = maturity)
   }
   survival_probability = (1-mod_sim$rates)
-  survival_df = matrix(nrow=3000,ncol=5)
+  survival_df = matrix(nrow=nsimCDF,ncol=control)
   for (i in 1:control){
-    survival_df[,i] = survival_probability[i+control-1,1,] 
+    survival_df[,i] = survival_probability[control+i-1,1+i,]  # Change the 5 for a different VaR
   }
   
   if (premium == "Wang") {
@@ -189,8 +160,50 @@ RHMadForwardCDF = forwardCDF(forward_years,x, RHMadlambda, "RH", "Mad", pi=RH_Ma
 CBDMadForwardCDF = forwardCDF(forward_years,x, CBDMadlambda, "CBD", "Mad", pi=CBD_Mad_Forward_Premium[forward_years], nsim=nsimCDF)
 M6MadForwardCDF = forwardCDF(forward_years,x, M6Madlambda, "M6", "Mad", pi=M6_Mad_Forward_Premium[forward_years], nsim=nsimCDF)
 
+############ SWAP CDF ###############
+LCWangSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCWanglambda, "LC", "Wang", pi=LC_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
+RHWangSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHWanglambda, "RH", "Wang", pi=RH_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
+CBDWangSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDWanglambda, "CBD", "Wang", pi=CBD_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
+M6WangSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6Wanglambda, "M6", "Wang", pi=M6_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
 
-alpha = 0.005
+LCPropSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCProplambda, "LC", "Proportional", pi=LC_Prop_Swap_Premium[forward_years], nsim=nsimCDF)
+RHPropSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHProplambda, "RH", "Proportional", pi=RH_Prop_Swap_Premium[forward_years], nsim=nsimCDF)
+CBDPropSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDProplambda, "CBD", "Proportional", pi=CBD_Prop_Swap_Premium[forward_years], nsim=nsimCDF)
+M6PropSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6Proplambda, "M6", "Proportional", pi=M6_Prop_Swap_Premium[forward_years], nsim=nsimCDF)
+
+LCDualSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCDuallambda, "LC", "Dual", pi=LC_Dual_Swap_Premium[forward_years], nsim=nsimCDF)
+RHDualSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHDuallambda, "RH", "Dual", pi=RH_Dual_Swap_Premium[forward_years], nsim=nsimCDF)
+CBDDualSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDDuallambda, "CBD", "Dual", pi=CBD_Dual_Swap_Premium[forward_years], nsim=nsimCDF)
+M6DualSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6Duallambda, "M6", "Dual", pi=M6_Dual_Swap_Premium[forward_years], nsim=nsimCDF)
+
+LCGiniSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCGinilambda, "LC", "Gini", pi=LC_Gini_Swap_Premium[forward_years], nsim=nsimCDF)
+RHGiniSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHGinilambda, "RH", "Gini", pi=RH_Gini_Swap_Premium[forward_years], nsim=nsimCDF)
+CBDGiniSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDGinilambda, "CBD", "Gini", pi=CBD_Gini_Swap_Premium[forward_years], nsim=nsimCDF)
+M6GiniSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6Ginilambda, "M6", "Gini", pi=M6_Gini_Swap_Premium[forward_years], nsim=nsimCDF)
+
+LCExponentialSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCExponentiallambda, "LC", "Exponential", pi=LC_Exponential_Swap_Premium[forward_years], nsim=nsimCDF)
+RHExponentialSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHExponentiallambda, "RH", "Exponential", pi=RH_Exponential_Swap_Premium[forward_years], nsim=nsimCDF)
+CBDExponentialSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDExponentiallambda, "CBD", "Exponential", pi=CBD_Exponential_Swap_Premium[forward_years], nsim=nsimCDF)
+M6ExponentialSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6Exponentiallambda, "M6", "Exponential", pi=M6_Exponential_Swap_Premium[forward_years], nsim=nsimCDF)
+
+LCStDevSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCStDevlambda, "LC", "StDev", pi=LC_Std_Swap_Premium[forward_years], nsim=nsimCDF)
+RHStDevSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHStDevlambda, "RH", "StDev", pi=RH_Std_Swap_Premium[forward_years], nsim=nsimCDF)
+CBDStDevSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDStDevlambda, "CBD", "StDev", pi=CBD_Std_Swap_Premium[forward_years], nsim=nsimCDF)
+M6StDevSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6StDevlambda, "M6", "StDev", pi=M6_Std_Swap_Premium[forward_years], nsim=nsimCDF)
+
+LCVarSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCVarlambda, "LC", "Var", pi=LC_Var_Swap_Premium[forward_years], nsim=nsimCDF)
+RHVarSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHVarlambda, "RH", "Var", pi=RH_Var_Swap_Premium[forward_years], nsim=nsimCDF)
+CBDVarSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDVarlambda, "CBD", "Var", pi=CBD_Var_Swap_Premium[forward_years], nsim=nsimCDF)
+M6VarSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6Varlambda, "M6", "Var", pi=M6_Var_Swap_Premium[forward_years], nsim=nsimCDF)
+
+LCMadSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCMadlambda, "LC", "Mad", pi=LC_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
+RHMadSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHMadlambda, "RH", "Mad", pi=RH_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
+CBDMadSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDMadlambda, "CBD", "Mad", pi=CBD_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
+M6MadSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6Madlambda, "M6", "Mad", pi=M6_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
+
+# Quantile Calculations
+
+alpha = 0.005 # PLEASE VERIFY
 LCWangVaR = quantile(LCWangForwardCDF, probs=alpha)
 RHWangVaR = quantile(RHWangForwardCDF, probs=alpha)
 CBDWangVaR = quantile(CBDWangForwardCDF, probs=alpha)
@@ -230,47 +243,6 @@ LCMadVaR = quantile(LCMadForwardCDF, probs=alpha)
 RHMadVaR = quantile(RHMadForwardCDF, probs=alpha)
 CBDMadVaR = quantile(CBDMadForwardCDF, probs=alpha)
 M6MadVaR = quantile(M6MadForwardCDF, probs=alpha)
-
-############ SWAP CDF ###############
-LCWangSwapCDF = SwapCDF(forward_years,x, control=5, lambda= LCWanglambda, "LC", "Wang", pi=LC_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
-RHWangSwapCDF = SwapCDF(forward_years,x, control=5, lambda= RHWanglambda, "RH", "Wang", pi=RH_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
-CBDWangSwapCDF = SwapCDF(forward_years,x, control=5, lambda= CBDWanglambda, "CBD", "Wang", pi=CBD_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
-M6WangSwapCDF = SwapCDF(forward_years,x, control=5, lambda= M6Wanglambda, "M6", "Wang", pi=M6_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
-
-LCPropSwapCDF = SwapCDF(forward_years,x, control=5, lambda= LCProplambda, "LC", "Proportional", pi=LC_Prop_Swap_Premium[forward_years], nsim=nsimCDF)
-RHPropSwapCDF = SwapCDF(forward_years,x, control=5, lambda= RHProplambda, "RH", "Proportional", pi=RH_Prop_Swap_Premium[forward_years], nsim=nsimCDF)
-CBDPropSwapCDF = SwapCDF(forward_years,x, control=5, lambda= CBDProplambda, "CBD", "Proportional", pi=CBD_Prop_Swap_Premium[forward_years], nsim=nsimCDF)
-M6PropSwapCDF = SwapCDF(forward_years,x, control=5, lambda= M6Proplambda, "M6", "Proportional", pi=M6_Prop_Swap_Premium[forward_years], nsim=nsimCDF)
-
-LCDualSwapCDF = SwapCDF(forward_years,x, control=5, lambda= LCDuallambda, "LC", "Dual", pi=LC_Dual_Swap_Premium[forward_years], nsim=nsimCDF)
-RHDualSwapCDF = SwapCDF(forward_years,x, control=5, lambda= RHDuallambda, "RH", "Dual", pi=RH_Dual_Swap_Premium[forward_years], nsim=nsimCDF)
-CBDDualSwapCDF = SwapCDF(forward_years,x, control=5, lambda= CBDDuallambda, "CBD", "Dual", pi=CBD_Dual_Swap_Premium[forward_years], nsim=nsimCDF)
-M6DualSwapCDF = SwapCDF(forward_years,x, control=5, lambda= M6Duallambda, "M6", "Dual", pi=M6_Dual_Swap_Premium[forward_years], nsim=nsimCDF)
-
-LCGiniSwapCDF = SwapCDF(forward_years,x, control=5, lambda= LCGinilambda, "LC", "Gini", pi=LC_Gini_Swap_Premium[forward_years], nsim=nsimCDF)
-RHGiniSwapCDF = SwapCDF(forward_years,x, control=5, lambda= RHGinilambda, "RH", "Gini", pi=RH_Gini_Swap_Premium[forward_years], nsim=nsimCDF)
-CBDGiniSwapCDF = SwapCDF(forward_years,x, control=5, lambda= CBDGinilambda, "CBD", "Gini", pi=CBD_Gini_Swap_Premium[forward_years], nsim=nsimCDF)
-M6GiniSwapCDF = SwapCDF(forward_years,x, control=5, lambda= M6Ginilambda, "M6", "Gini", pi=M6_Gini_Swap_Premium[forward_years], nsim=nsimCDF)
-
-LCExponentialSwapCDF = SwapCDF(forward_years,x, control=5, lambda= LCExponentiallambda, "LC", "Exponential", pi=LC_Exponential_Swap_Premium[forward_years], nsim=nsimCDF)
-RHExponentialSwapCDF = SwapCDF(forward_years,x, control=5, lambda= RHExponentiallambda, "RH", "Exponential", pi=RH_Exponential_Swap_Premium[forward_years], nsim=nsimCDF)
-CBDExponentialSwapCDF = SwapCDF(forward_years,x, control=5, lambda= CBDExponentiallambda, "CBD", "Exponential", pi=CBD_Exponential_Swap_Premium[forward_years], nsim=nsimCDF)
-M6ExponentialSwapCDF = SwapCDF(forward_years,x, control=5, lambda= M6Exponentiallambda, "M6", "Exponential", pi=M6_Exponential_Swap_Premium[forward_years], nsim=nsimCDF)
-
-LCStDevSwapCDF = SwapCDF(forward_years,x, control=5, lambda= LCStDevlambda, "LC", "StDev", pi=LC_Std_Swap_Premium[forward_years], nsim=nsimCDF)
-RHStDevSwapCDF = SwapCDF(forward_years,x, control=5, lambda= RHStDevlambda, "RH", "StDev", pi=RH_Std_Swap_Premium[forward_years], nsim=nsimCDF)
-CBDStDevSwapCDF = SwapCDF(forward_years,x, control=5, lambda= CBDStDevlambda, "CBD", "StDev", pi=CBD_Std_Swap_Premium[forward_years], nsim=nsimCDF)
-M6StDevSwapCDF = SwapCDF(forward_years,x, control=5, lambda= M6StDevlambda, "M6", "StDev", pi=M6_Std_Swap_Premium[forward_years], nsim=nsimCDF)
-
-LCVarSwapCDF = SwapCDF(forward_years,x, control=5, lambda= LCVarlambda, "LC", "Var", pi=LC_Var_Swap_Premium[forward_years], nsim=nsimCDF)
-RHVarSwapCDF = SwapCDF(forward_years,x, control=5, lambda= RHVarlambda, "RH", "Var", pi=RH_Var_Swap_Premium[forward_years], nsim=nsimCDF)
-CBDVarSwapCDF = SwapCDF(forward_years,x, control=5, lambda= CBDVarlambda, "CBD", "Var", pi=CBD_Var_Swap_Premium[forward_years], nsim=nsimCDF)
-M6VarSwapCDF = SwapCDF(forward_years,x, control=5, lambda= M6Varlambda, "M6", "Var", pi=M6_Var_Swap_Premium[forward_years], nsim=nsimCDF)
-
-LCMadSwapCDF = SwapCDF(forward_years,x, control=5, lambda= LCMadlambda, "LC", "Mad", pi=LC_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
-RHMadSwapCDF = SwapCDF(forward_years,x, control=5, lambda= RHMadlambda, "RH", "Mad", pi=RH_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
-CBDMadSwapCDF = SwapCDF(forward_years,x, control=5, lambda= CBDMadlambda, "CBD", "Mad", pi=CBD_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
-M6MadSwapCDF = SwapCDF(forward_years,x, control=5, lambda= M6Madlambda, "M6", "Mad", pi=M6_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
 
 LCWangSwapVaR = quantile(LCWangSwapCDF, probs=alpha)
 RHWangSwapVaR = quantile(RHWangSwapCDF, probs=alpha)
@@ -464,7 +436,7 @@ RHStDevSwapES = mean( sort(RHStDevSwapCDF)[1:(nsimCDF*alpha - 1)] )
 CBDStDevSwapES = mean( sort(CBDStDevSwapCDF)[1:(nsimCDF*alpha - 1)] )
 M6StDevSwapES = mean( sort(M6StDevSwapCDF)[1:(nsimCDF*alpha - 1)] )
 
-LCVarSwapES = mean( sort(LCVarSwapCDF)[1:(nsimCDF*alpha - 1)] )
+LCVarSwapES =  mean( sort(LCVarSwapCDF)[1:(nsimCDF*alpha - 1)] )
 RHVarSwapES = mean( sort(RHVarSwapCDF)[1:(nsimCDF*alpha - 1)] )
 CBDVarSwapES = mean( sort(CBDVarSwapCDF)[1:(nsimCDF*alpha - 1)] )
 M6VarSwapES = mean( sort(M6VarSwapCDF)[1:(nsimCDF*alpha - 1)] )
@@ -480,7 +452,7 @@ Forward_VaR_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangVaR, LCPropVaR
                                                             CBDWangVaR, CBDPropVaR, CBDDualVaR, CBDGiniVaR, CBDExponentialVaR, CBDStDevVaR, CBDVarVaR, CBDMadVaR,
                                                             M6WangVaR, M6PropVaR, M6DualVaR, M6GiniVaR, M6ExponentialVaR, M6StDevVaR, M6VarVaR, M6MadVaR)
 ))
-rownames(Forward_VaR_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
+rownames(Forward_VaR_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
 colnames(Forward_VaR_table) = c("LC","RH","CBD","M6")
 
 Swap_VaR_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapVaR, LCPropSwapVaR, LCDualSwapVaR, LCGiniSwapVaR, LCExponentialSwapVaR, LCStDevSwapVaR, LCVarSwapVaR, LCMadSwapVaR,
@@ -488,7 +460,7 @@ Swap_VaR_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapVaR, LCPropSw
                                                          CBDWangSwapVaR, CBDPropSwapVaR, CBDDualSwapVaR, CBDGiniSwapVaR, CBDExponentialSwapVaR, CBDStDevSwapVaR, CBDVarSwapVaR, CBDMadSwapVaR,
                                                          M6WangSwapVaR, M6PropSwapVaR, M6DualSwapVaR, M6GiniSwapVaR, M6ExponentialSwapVaR, M6StDevSwapVaR, M6VarSwapVaR, M6MadSwapVaR)
 ))
-rownames(Swap_VaR_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
+rownames(Swap_VaR_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
 colnames(Swap_VaR_table) = c("LC","RH","CBD","M6")
 
 Forward_ES_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangES, LCPropES, LCDualES, LCGiniES, LCExponentialES, LCStDevES, LCVarES, LCMadES,
@@ -496,7 +468,7 @@ Forward_ES_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangES, LCPropES, L
                                                            CBDWangES, CBDPropES, CBDDualES, CBDGiniES, CBDExponentialES, CBDStDevES, CBDVarES, CBDMadES,
                                                            M6WangES, M6PropES, M6DualES, M6GiniES, M6ExponentialES, M6StDevES, M6VarES, M6MadES)
 ))
-rownames(Forward_ES_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
+rownames(Forward_ES_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
 colnames(Forward_ES_table) = c("LC","RH","CBD","M6")
 
 Swap_ES_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapES, LCPropSwapES, LCDualSwapES, LCGiniSwapES, LCExponentialSwapES, LCStDevSwapES, LCVarSwapES, LCMadSwapES,
@@ -504,16 +476,44 @@ Swap_ES_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapES, LCPropSwap
                                                         CBDWangSwapES, CBDPropSwapES, CBDDualSwapES, CBDGiniSwapES, CBDExponentialSwapES, CBDStDevSwapES, CBDVarSwapES, CBDMadSwapES,
                                                         M6WangSwapES, M6PropSwapES, M6DualSwapES, M6GiniSwapES, M6ExponentialSwapES, M6StDevSwapES, M6VarSwapES, M6MadSwapES)
 ))
-rownames(Swap_ES_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
+rownames(Swap_ES_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
 colnames(Swap_ES_table) = c("LC","RH","CBD","M6")
 
-round(Forward_VaR_table,16) 
-round(Swap_VaR_table,4) 
-round(Forward_ES_table,4) 
-round(Swap_ES_table,4) 
+# format(abs(Swap_VaR_table), scientific=2, digits=4)
 
-write.csv( round(Forward_VaR_table,4) )
-write.csv( round(Swap_VaR_table,4) )
+write.csv( format(abs(Forward_VaR_table), scientific=FALSE, digits=4)  )
+# write.csv( format(abs(Swap_VaR_table), scientific=FALSE, digits=4) )
 
-write.csv( round(Forward_ES_table,4) )
-write.csv(round(Swap_ES_table,4))
+write.csv( format(abs(Forward_ES_table), scientific=FALSE, digits=4)  )
+# write.csv( format(abs(Swap_ES_table), scientific=FALSE, digits=4) )
+
+write.csv( format( abs(data.frame(Swap_VaR_table, Swap_ES_table)), scientific = TRUE, digits=4))
+
+# Difference in range
+# diff = as.numeric(sapply(abs(Forward_VaR_table), range)[2,] - sapply(abs(Forward_VaR_table), range)[1,])
+# format(sapply(abs(Forward_VaR_table), range), scientific=TRUE, digits=4) 
+# format(diff, scientific=TRUE, digits=4)
+# 
+# 
+# diff = as.numeric(sapply(abs(Swap_VaR_table), range)[2,] - sapply(abs(Swap_VaR_table), range)[1,])
+# format(sapply(abs(Swap_VaR_table), range), scientific=TRUE, digits=4) 
+# format(diff, scientific=TRUE, digits=4)
+# 
+# diff = as.numeric(sapply(abs(Forward_ES_table), range)[2,] - sapply(abs(Forward_ES_table), range)[1,])
+# format(sapply(abs(Forward_ES_table), range), scientific=TRUE, digits=4) 
+# format(diff, scientific=TRUE, digits=4)
+# 
+# 
+# diff = as.numeric(sapply(abs(Swap_ES_table), range)[2,] - sapply(abs(Swap_ES_table), range)[1,])
+# format(sapply(abs(Swap_ES_table), range), scientific=TRUE, digits=4) 
+# format(diff, scientific=TRUE, digits=4)
+
+
+# Tables for paper
+# 
+# write.csv(format(data.frame(LC.premium.table,RH.premium.table), scientific=TRUE, digits=4) )
+# 
+# write.csv(format(data.frame(CBD.premium.table,M6.premium.table), scientific=TRUE, digits=4) )
+# 
+# write.csv(format(lambda_table, scientific=TRUE, digits=4) )
+
