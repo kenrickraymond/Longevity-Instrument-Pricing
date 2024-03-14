@@ -1,4 +1,6 @@
-forwardCDF = function(maturity, x, lambda, model, premium, pi, nsim=1000){
+maturity=10
+
+forwardCDF = function(maturity, x, lambda, model, premium, pi, nsim=100){
   model = toString(model)
   premium = toString(premium)
   
@@ -54,7 +56,7 @@ forwardCDF = function(maturity, x, lambda, model, premium, pi, nsim=1000){
   return(contract_value)
 }
 
-# Control = 5 for 5-year VaR and control = 9 for 1-year VaR
+# TO CHECK
 SwapCDF = function(forward_years, x, control, lambda, model, premium, pi, nsim=100){
   model = toString(model)
   premium = toString(premium)
@@ -74,9 +76,9 @@ SwapCDF = function(forward_years, x, control, lambda, model, premium, pi, nsim=1
     mod_sim = simulate(M6fit, nsim = nsim, h = maturity)
   }
   survival_probability = (1-mod_sim$rates)
-  survival_df = matrix(nrow=nsimCDF,ncol=control)
-  for (i in 1:control){
-    survival_df[,i] = survival_probability[control+i-1,1+i,]  # Change the 5 for a different VaR
+  survival_df = matrix(nrow=nsim,ncol=control)
+  for (i in 1:control){ # COntrol is 9 for 1 year VaR
+    survival_df[,i] = survival_probability[i+control-1,1,] 
   }
   
   if (premium == "Wang") {
@@ -117,7 +119,7 @@ SwapCDF = function(forward_years, x, control, lambda, model, premium, pi, nsim=1
 }
 
 forward_years=10
-nsimCDF = 3000
+nsimCDF = 5000
 x = 5 # Indicates Age 65 + x
 
 LCWangForwardCDF = forwardCDF(forward_years,x, LCWanglambda, "LC", "Wang", pi=LC_Wang_Forward_Premium[forward_years], nsim=nsimCDF)
@@ -160,6 +162,48 @@ RHMadForwardCDF = forwardCDF(forward_years,x, RHMadlambda, "RH", "Mad", pi=RH_Ma
 CBDMadForwardCDF = forwardCDF(forward_years,x, CBDMadlambda, "CBD", "Mad", pi=CBD_Mad_Forward_Premium[forward_years], nsim=nsimCDF)
 M6MadForwardCDF = forwardCDF(forward_years,x, M6Madlambda, "M6", "Mad", pi=M6_Mad_Forward_Premium[forward_years], nsim=nsimCDF)
 
+
+alpha = 0.005
+LCWangVaR = quantile(LCWangForwardCDF, probs=alpha)
+RHWangVaR = quantile(RHWangForwardCDF, probs=alpha)
+CBDWangVaR = quantile(CBDWangForwardCDF, probs=alpha)
+M6WangVaR = quantile(M6WangForwardCDF, probs=alpha)
+
+LCPropVaR = quantile(LCPropForwardCDF, probs=alpha)
+RHPropVaR = quantile(RHPropForwardCDF, probs=alpha)
+CBDPropVaR = quantile(CBDPropForwardCDF, probs=alpha)
+M6PropVaR = quantile(M6PropForwardCDF, probs=alpha)
+
+LCDualVaR = quantile(LCDualForwardCDF, probs=alpha)
+RHDualVaR = quantile(RHDualForwardCDF, probs=alpha)
+CBDDualVaR = quantile(CBDDualForwardCDF, probs=alpha)
+M6DualVaR = quantile(M6DualForwardCDF, probs=alpha)
+
+LCGiniVaR = quantile(LCGiniForwardCDF, probs=alpha)
+RHGiniVaR = quantile(RHGiniForwardCDF, probs=alpha)
+CBDGiniVaR = quantile(CBDGiniForwardCDF, probs=alpha)
+M6GiniVaR = quantile(M6GiniForwardCDF, probs=alpha)
+
+LCExponentialVaR = quantile(LCExponentialForwardCDF, probs=alpha)
+RHExponentialVaR = quantile(RHExponentialForwardCDF, probs=alpha)
+CBDExponentialVaR = quantile(CBDExponentialForwardCDF, probs=alpha)
+M6ExponentialVaR = quantile(M6ExponentialForwardCDF, probs=alpha)
+
+LCStDevVaR = quantile(LCStDevForwardCDF, probs=alpha)
+RHStDevVaR = quantile(RHStDevForwardCDF, probs=alpha)
+CBDStDevVaR = quantile(CBDStDevForwardCDF, probs=alpha)
+M6StDevVaR = quantile(M6StDevForwardCDF, probs=alpha)
+
+LCVarVaR = quantile(LCVarForwardCDF, probs=alpha)
+RHVarVaR = quantile(RHVarForwardCDF, probs=alpha)
+CBDVarVaR = quantile(CBDVarForwardCDF, probs=alpha)
+M6VarVaR = quantile(M6VarForwardCDF, probs=alpha)
+
+LCMadVaR = quantile(LCMadForwardCDF, probs=alpha)
+RHMadVaR = quantile(RHMadForwardCDF, probs=alpha)
+CBDMadVaR = quantile(CBDMadForwardCDF, probs=alpha)
+M6MadVaR = quantile(M6MadForwardCDF, probs=alpha)
+
 ############ SWAP CDF ###############
 LCWangSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCWanglambda, "LC", "Wang", pi=LC_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
 RHWangSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHWanglambda, "RH", "Wang", pi=RH_Wang_Swap_Premium[forward_years], nsim=nsimCDF)
@@ -200,49 +244,6 @@ LCMadSwapCDF = SwapCDF(forward_years,x, control=9, lambda= LCMadlambda, "LC", "M
 RHMadSwapCDF = SwapCDF(forward_years,x, control=9, lambda= RHMadlambda, "RH", "Mad", pi=RH_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
 CBDMadSwapCDF = SwapCDF(forward_years,x, control=9, lambda= CBDMadlambda, "CBD", "Mad", pi=CBD_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
 M6MadSwapCDF = SwapCDF(forward_years,x, control=9, lambda= M6Madlambda, "M6", "Mad", pi=M6_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
-
-# Quantile Calculations
-
-alpha = 0.005 # PLEASE VERIFY
-LCWangVaR = quantile(LCWangForwardCDF, probs=alpha)
-RHWangVaR = quantile(RHWangForwardCDF, probs=alpha)
-CBDWangVaR = quantile(CBDWangForwardCDF, probs=alpha)
-M6WangVaR = quantile(M6WangForwardCDF, probs=alpha)
-
-LCPropVaR = quantile(LCPropForwardCDF, probs=alpha)
-RHPropVaR = quantile(RHPropForwardCDF, probs=alpha)
-CBDPropVaR = quantile(CBDPropForwardCDF, probs=alpha)
-M6PropVaR = quantile(M6PropForwardCDF, probs=alpha)
-
-LCDualVaR = quantile(LCDualForwardCDF, probs=alpha)
-RHDualVaR = quantile(RHDualForwardCDF, probs=alpha)
-CBDDualVaR = quantile(CBDDualForwardCDF, probs=alpha)
-M6DualVaR = quantile(M6DualForwardCDF, probs=alpha)
-
-LCGiniVaR = quantile(LCGiniForwardCDF, probs=alpha)
-RHGiniVaR = quantile(RHGiniForwardCDF, probs=alpha)
-CBDGiniVaR = quantile(CBDGiniForwardCDF, probs=alpha)
-M6GiniVaR = quantile(M6GiniForwardCDF, probs=alpha)
-
-LCExponentialVaR = quantile(LCExponentialForwardCDF, probs=alpha)
-RHExponentialVaR = quantile(RHExponentialForwardCDF, probs=alpha)
-CBDExponentialVaR = quantile(CBDExponentialForwardCDF, probs=alpha)
-M6ExponentialVaR = quantile(M6ExponentialForwardCDF, probs=alpha)
-
-LCStDevVaR = quantile(LCStDevForwardCDF, probs=alpha)
-RHStDevVaR = quantile(RHStDevForwardCDF, probs=alpha)
-CBDStDevVaR = quantile(CBDStDevForwardCDF, probs=alpha)
-M6StDevVaR = quantile(M6StDevForwardCDF, probs=alpha)
-
-LCVarVaR = quantile(LCVarForwardCDF, probs=alpha)
-RHVarVaR = quantile(RHVarForwardCDF, probs=alpha)
-CBDVarVaR = quantile(CBDVarForwardCDF, probs=alpha)
-M6VarVaR = quantile(M6VarForwardCDF, probs=alpha)
-
-LCMadVaR = quantile(LCMadForwardCDF, probs=alpha)
-RHMadVaR = quantile(RHMadForwardCDF, probs=alpha)
-CBDMadVaR = quantile(CBDMadForwardCDF, probs=alpha)
-M6MadVaR = quantile(M6MadForwardCDF, probs=alpha)
 
 LCWangSwapVaR = quantile(LCWangSwapCDF, probs=alpha)
 RHWangSwapVaR = quantile(RHWangSwapCDF, probs=alpha)
@@ -436,7 +437,7 @@ RHStDevSwapES = mean( sort(RHStDevSwapCDF)[1:(nsimCDF*alpha - 1)] )
 CBDStDevSwapES = mean( sort(CBDStDevSwapCDF)[1:(nsimCDF*alpha - 1)] )
 M6StDevSwapES = mean( sort(M6StDevSwapCDF)[1:(nsimCDF*alpha - 1)] )
 
-LCVarSwapES =  mean( sort(LCVarSwapCDF)[1:(nsimCDF*alpha - 1)] )
+LCVarSwapES = mean( sort(LCVarSwapCDF)[1:(nsimCDF*alpha - 1)] )
 RHVarSwapES = mean( sort(RHVarSwapCDF)[1:(nsimCDF*alpha - 1)] )
 CBDVarSwapES = mean( sort(CBDVarSwapCDF)[1:(nsimCDF*alpha - 1)] )
 M6VarSwapES = mean( sort(M6VarSwapCDF)[1:(nsimCDF*alpha - 1)] )
@@ -452,7 +453,7 @@ Forward_VaR_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangVaR, LCPropVaR
                                                             CBDWangVaR, CBDPropVaR, CBDDualVaR, CBDGiniVaR, CBDExponentialVaR, CBDStDevVaR, CBDVarVaR, CBDMadVaR,
                                                             M6WangVaR, M6PropVaR, M6DualVaR, M6GiniVaR, M6ExponentialVaR, M6StDevVaR, M6VarVaR, M6MadVaR)
 ))
-rownames(Forward_VaR_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
+rownames(Forward_VaR_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(Forward_VaR_table) = c("LC","RH","CBD","M6")
 
 Swap_VaR_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapVaR, LCPropSwapVaR, LCDualSwapVaR, LCGiniSwapVaR, LCExponentialSwapVaR, LCStDevSwapVaR, LCVarSwapVaR, LCMadSwapVaR,
@@ -460,7 +461,7 @@ Swap_VaR_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapVaR, LCPropSw
                                                          CBDWangSwapVaR, CBDPropSwapVaR, CBDDualSwapVaR, CBDGiniSwapVaR, CBDExponentialSwapVaR, CBDStDevSwapVaR, CBDVarSwapVaR, CBDMadSwapVaR,
                                                          M6WangSwapVaR, M6PropSwapVaR, M6DualSwapVaR, M6GiniSwapVaR, M6ExponentialSwapVaR, M6StDevSwapVaR, M6VarSwapVaR, M6MadSwapVaR)
 ))
-rownames(Swap_VaR_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
+rownames(Swap_VaR_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(Swap_VaR_table) = c("LC","RH","CBD","M6")
 
 Forward_ES_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangES, LCPropES, LCDualES, LCGiniES, LCExponentialES, LCStDevES, LCVarES, LCMadES,
@@ -468,7 +469,7 @@ Forward_ES_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangES, LCPropES, L
                                                            CBDWangES, CBDPropES, CBDDualES, CBDGiniES, CBDExponentialES, CBDStDevES, CBDVarES, CBDMadES,
                                                            M6WangES, M6PropES, M6DualES, M6GiniES, M6ExponentialES, M6StDevES, M6VarES, M6MadES)
 ))
-rownames(Forward_ES_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
+rownames(Forward_ES_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(Forward_ES_table) = c("LC","RH","CBD","M6")
 
 Swap_ES_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapES, LCPropSwapES, LCDualSwapES, LCGiniSwapES, LCExponentialSwapES, LCStDevSwapES, LCVarSwapES, LCMadSwapES,
@@ -476,44 +477,16 @@ Swap_ES_table = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapES, LCPropSwap
                                                         CBDWangSwapES, CBDPropSwapES, CBDDualSwapES, CBDGiniSwapES, CBDExponentialSwapES, CBDStDevSwapES, CBDVarSwapES, CBDMadSwapES,
                                                         M6WangSwapES, M6PropSwapES, M6DualSwapES, M6GiniSwapES, M6ExponentialSwapES, M6StDevSwapES, M6VarSwapES, M6MadSwapES)
 ))
-rownames(Swap_ES_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
+rownames(Swap_ES_table) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "StDev", "Var", "Mad")
 colnames(Swap_ES_table) = c("LC","RH","CBD","M6")
 
-# format(abs(Swap_VaR_table), scientific=2, digits=4)
+round(Forward_VaR_table,4) 
+round(Swap_VaR_table,4) 
+round(Forward_ES_table_2Y,4) 
+round(Swap_ES_table_2Y,4) 
 
-write.csv( format(abs(Forward_VaR_table), scientific=FALSE, digits=4)  )
-# write.csv( format(abs(Swap_VaR_table), scientific=FALSE, digits=4) )
+write.csv( round(Forward_VaR_table,4) )
+write.csv( round(Swap_VaR_table,4) )
 
-write.csv( format(abs(Forward_ES_table), scientific=FALSE, digits=4)  )
-# write.csv( format(abs(Swap_ES_table), scientific=FALSE, digits=4) )
-
-write.csv( format( abs(data.frame(Swap_VaR_table, Swap_ES_table)), scientific = TRUE, digits=4))
-
-# Difference in range
-# diff = as.numeric(sapply(abs(Forward_VaR_table), range)[2,] - sapply(abs(Forward_VaR_table), range)[1,])
-# format(sapply(abs(Forward_VaR_table), range), scientific=TRUE, digits=4) 
-# format(diff, scientific=TRUE, digits=4)
-# 
-# 
-# diff = as.numeric(sapply(abs(Swap_VaR_table), range)[2,] - sapply(abs(Swap_VaR_table), range)[1,])
-# format(sapply(abs(Swap_VaR_table), range), scientific=TRUE, digits=4) 
-# format(diff, scientific=TRUE, digits=4)
-# 
-# diff = as.numeric(sapply(abs(Forward_ES_table), range)[2,] - sapply(abs(Forward_ES_table), range)[1,])
-# format(sapply(abs(Forward_ES_table), range), scientific=TRUE, digits=4) 
-# format(diff, scientific=TRUE, digits=4)
-# 
-# 
-# diff = as.numeric(sapply(abs(Swap_ES_table), range)[2,] - sapply(abs(Swap_ES_table), range)[1,])
-# format(sapply(abs(Swap_ES_table), range), scientific=TRUE, digits=4) 
-# format(diff, scientific=TRUE, digits=4)
-
-
-# Tables for paper
-# 
-# write.csv(format(data.frame(LC.premium.table,RH.premium.table), scientific=TRUE, digits=4) )
-# 
-# write.csv(format(data.frame(CBD.premium.table,M6.premium.table), scientific=TRUE, digits=4) )
-# 
-# write.csv(format(lambda_table, scientific=TRUE, digits=4) )
-
+write.csv( round(Forward_ES_table,4) )
+write.csv(round(Swap_ES_table,4))
