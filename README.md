@@ -1,4 +1,4 @@
-This repository contains the resources relevant to my thesis. It builds upon the [StMoMo package](https://github.com/amvillegas/StMoMo), using a simulation-based approach to price derivatives indexed on the number of survivors from a reference population. Specifically, it prices:
+This repository contains the resources relevant to my thesis. We adopt a simulation-based approach to price contracts indexed on the number of survivors from a reference population. Specifically, it prices:
 * Survival forwards
 * Survivor swaps
 
