@@ -100,11 +100,11 @@ SwapCDF = function(forward_years, control, lambda, model, premium, pi, nsim=100)
     K_t = rowSums( 1 - exp( -1 * (survival_df) ) )/(1-exp(-1) )
   }
   if (premium == "Stdev") {
-    S_t = ( ( rowSums(survival_df) ) + lambda * sd( rowSums(survival_df) ) )
+    S_t = ( ( rowSums(survival_df) ) + lambda * sqrt( rowVars(survival_df) ) )
     K_t = ( rowSums(survival_df) )
   }
   if (premium == "Var") {
-    S_t = ( ( rowSums(survival_df) ) + lambda * var( rowSums(survival_df) ) )
+    S_t = ( ( rowSums(survival_df) ) + lambda * rowVars( survival_df ) )
     K_t = ( rowSums(survival_df) )
   }
   if (premium == "Mad") {
@@ -581,11 +581,11 @@ SwapCDF_2Y = function(forward_years, control=8, lambda, model, premium, pi, nsim
     K_t = rowSums( 1 - exp( -1 * (survival_df) ) )/(1-exp(-1) )
   }
   if (premium == "Stdev") {
-    S_t = ( ( rowSums(survival_df) ) + lambda * sd( rowSums(survival_df) ) )
+    S_t = ( ( rowSums(survival_df) ) + lambda * sqrt( rowVars( survival_df ) ) )
     K_t = ( rowSums(survival_df) )
   }
   if (premium == "Var") {
-    S_t = ( ( rowSums(survival_df) ) + lambda * var( rowSums(survival_df) ) )
+    S_t = ( ( rowSums(survival_df) ) + lambda * rowVars( survival_df ) )
     K_t = ( rowSums(survival_df) )
   }
   if (premium == "Mad") {
@@ -959,7 +959,7 @@ colnames(Swap_ES_table_2Y) = c("LC","RH","CBD","M6")
 
 Forward_VaR_table
 Forward_ES_table
-Swap_VaR_table
+Swap_VaR_table - Swap_VaR_table_2Y
 Swap_ES_table
 
 
