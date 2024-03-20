@@ -80,7 +80,7 @@ SwapCDF = function(forward_years, control, lambda, model, premium, pi, nsim=100)
   }
   
   if (premium == "Wang") {
-    S_t = rowSums( 1 - pnorm( qnorm( 1 - (survival_df) ) - LCWanglambda) )
+    S_t = rowSums( 1 - pnorm( qnorm( 1 - (survival_df) ) - lambda) )
     K_t = rowSums( 1 - pnorm( qnorm( 1 - (survival_df) ) - 0) )
   }
   if (premium == "Proportional") {
@@ -500,7 +500,7 @@ forwardCDF_2Y = function(maturity, control=8, lambda, model, premium, pi, nsim=1
   survival_probability = (1-mod_sim$rates)[7+control, control,] # control = 8,
   
   if (premium == "Wang") {
-    S_t = ( 1 - pnorm( qnorm( 1 - survival_probability) - LCWanglambda) )
+    S_t = ( 1 - pnorm( qnorm( 1 - survival_probability) - lambda) )
     K_t = mean( 1 - pnorm( qnorm( 1 - survival_probability) - 0) )
   }
   if (premium == "Proportional") {
@@ -557,11 +557,11 @@ SwapCDF_2Y = function(forward_years, control=8, lambda, model, premium, pi, nsim
   survival_probability = (1-mod_sim$rates)
   survival_df = matrix(nrow=nsimCDF,ncol=control)
   for (i in 1:control){
-    survival_df[,i] = survival_probability[7+i, i,]  # For year i  
+    survival_df[,i] = survival_probability[7+i, i+1,]  # For year 2 ... 
   }
   
   if (premium == "Wang") {
-    S_t = rowSums( 1 - pnorm( qnorm( 1 - (survival_df) ) - LCWanglambda) )
+    S_t = rowSums( 1 - pnorm( qnorm( 1 - (survival_df) ) - lambda) )
     K_t = rowSums( 1 - pnorm( qnorm( 1 - (survival_df) ) - 0) )
   }
   if (premium == "Proportional") {
@@ -597,7 +597,7 @@ SwapCDF_2Y = function(forward_years, control=8, lambda, model, premium, pi, nsim
   return(contract_value)
 }
 
-# 5 Y
+# 2 Y
 LCWangforwardCDF_2Y = forwardCDF_2Y(forward_years,control = 8, LCWanglambda, "LC", "Wang", pi=LC_Wang_Forward_Premium[forward_years], nsim=nsimCDF)
 RHWangforwardCDF_2Y = forwardCDF_2Y(forward_years,control = 8, RHWanglambda, "RH", "Wang", pi=RH_Wang_Forward_Premium[forward_years], nsim=nsimCDF)
 CBDWangforwardCDF_2Y = forwardCDF_2Y(forward_years,control = 8, CBDWanglambda, "CBD", "Wang", pi=CBD_Wang_Forward_Premium[forward_years], nsim=nsimCDF)
@@ -680,8 +680,7 @@ CBDMadSwapCDF_2Y = SwapCDF_2Y(forward_years, control = 8, lambda= CBDMadlambda, 
 M6MadSwapCDF_2Y = SwapCDF_2Y(forward_years, control = 8, lambda= M6Madlambda, "M6", "Mad", pi=M6_Mad_Swap_Premium[forward_years], nsim=nsimCDF)
 
 # Quantile Calculations
-
-alpha = 0.005 # PLEASE VERIFY
+alpha = 0.005
 LCWangVaR_2Y = quantile(LCWangforwardCDF_2Y, probs=alpha)
 RHWangVaR_2Y = quantile(RHWangforwardCDF_2Y, probs=alpha)
 CBDWangVaR_2Y = quantile(CBDWangforwardCDF_2Y, probs=alpha)
@@ -956,3 +955,15 @@ Swap_ES_table_2Y = data.frame(matrix(nrow = 8, ncol = 4, c(LCWangSwapES_2Y, LCPr
 ))
 rownames(Swap_ES_table_2Y) = c("Wang", "Proportional", "Dual", "Gini", "Exponential", "Std. Dev.", "Variance", "MAD")
 colnames(Swap_ES_table_2Y) = c("LC","RH","CBD","M6")
+
+
+Forward_VaR_table
+Forward_ES_table
+Swap_VaR_table
+Swap_ES_table
+
+
+Forward_VaR_table_2Y
+Forward_ES_table_2Y
+Swap_VaR_table_2Y
+Swap_ES_table_2Y

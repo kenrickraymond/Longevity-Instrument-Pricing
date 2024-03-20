@@ -46,15 +46,15 @@ survivorForwardPremium = function(years_for, lambda, model, premium, nsim=100){
     S_t = discount_factor^(years_for) * mean( survival_rates_mat[,years_for]^(1/lambda) )
     K_t =  discount_factor^(years_for) * mean( survival_rates_mat[,years_for] )
   }
-  if (premium == "Dual") { # Check
+  if (premium == "Dual") { 
     S_t = discount_factor^(years_for) * mean(1 -  (1 - survival_rates_mat[,years_for])^(lambda) )
     K_t =  discount_factor^(years_for) * mean(1 -  (1 - survival_rates_mat[,years_for]) )
   }
-  if (premium == "Gini") { # Check
+  if (premium == "Gini") { 
     S_t = discount_factor^(years_for) * ( mean( (1 + lambda) * survival_rates_mat[,years_for] ) - lambda * mean( survival_rates_mat[,years_for]^2 ) )
     K_t =  discount_factor^(years_for) * mean( (1) * survival_rates_mat[,years_for] )
   }
-  if (premium == "Exponential") { # I don't know if this K_t is correct
+  if (premium == "Exponential") { 
     S_t = discount_factor^(years_for) * mean( 1 - exp( - lambda * survival_rates_mat[,years_for] ) )/(1-exp(- lambda) )
     K_t =  discount_factor^(years_for) * mean( 1 - exp( -1 * survival_rates_mat[,years_for] ) )/(1-exp(-1) )
   }
