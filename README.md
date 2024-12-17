@@ -15,7 +15,3 @@ Using eight pricing premium principles:
 Additionally, the thesis analyzes the impact of the choice of mortality model and premium principle to the risk-measures associated with the derivatives a Monte-Carlo approach. Specifically, the risk-measures considered include:
 * Value-at-risk (VaR)
 * Expected shortfall (cVaR)
-
-[The thesis PDF can be accessed here (58 pages)](https://github.com/kenrickraymond/Longevity-Instrument-Pricing/blob/master/Main_Working_Paper_Thesis.pdf)
-
-[The journal submission PDF can be accessed here (26 pages)](https://github.com/kenrickraymond/Longevity-Instrument-Pricing/blob/master/Risks%20Journal%20Submission.pdf)
